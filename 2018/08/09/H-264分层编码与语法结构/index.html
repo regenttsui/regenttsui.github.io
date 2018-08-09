@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="H.264,Video," />
 
 
 
@@ -79,13 +79,18 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Regent&#39;s Blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="H.264的分层编码H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。 H.264的语法结构">
+<meta name="keywords" content="H.264,Video">
+<meta property="og:type" content="article">
+<meta property="og:title" content="H.264分层编码与语法结构">
+<meta property="og:url" content="http://yoursite.com/2018/08/09/H-264分层编码与语法结构/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
+<meta property="og:description" content="H.264的分层编码H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。 H.264的语法结构">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-09T12:15:19.659Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Regent&#39;s Blog">
+<meta name="twitter:title" content="H.264分层编码与语法结构">
+<meta name="twitter:description" content="H.264的分层编码H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。 H.264的语法结构">
 
 
 
@@ -115,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/08/09/H-264分层编码与语法结构/"/>
 
 
 
 
 
-  <title>Regent's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>H.264分层编码与语法结构 | Regent's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -140,8 +145,7 @@
     
   
 
-  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-right 
-  page-home">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-right page-post-detail">
     <div class="headband"></div>
 
     <a href="https://github.com/regenttsui"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
@@ -255,9 +259,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -287,9 +291,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/09/H-264分层编码与语法结构/" itemprop="url">H.264分层编码与语法结构</a></h1>
+          <h1 class="post-title" itemprop="name headline">H.264分层编码与语法结构</h1>
         
 
         <div class="post-meta">
@@ -343,6 +345,11 @@
           
 
           
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
 
           
 
@@ -361,9 +368,7 @@
       
 
       
-        
-          
-            <h1 id="H-264的分层编码"><a href="#H-264的分层编码" class="headerlink" title="H.264的分层编码"></a>H.264的分层编码</h1><p>H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。</p>
+        <h1 id="H-264的分层编码"><a href="#H-264的分层编码" class="headerlink" title="H.264的分层编码"></a>H.264的分层编码</h1><p>H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。</p>
 <h1 id="H-264的语法结构"><a href="#H-264的语法结构" class="headerlink" title="H.264的语法结构"></a>H.264的语法结构</h1><h2 id="NAL流"><a href="#NAL流" class="headerlink" title="NAL流"></a>NAL流</h2><p>H.264编码得到文件即是一个NAL码流，NAL码流的基本单位是一个个的NAL单元(NAL Unit，NALU)。NALU的组织格式包括Annex B格式以及RTP格式，这里主要用到的是Annex B格式。标准中Annex B格式的NAL流的语法结构如图所示：</p>
 <h3 id="重要语法元素"><a href="#重要语法元素" class="headerlink" title="重要语法元素"></a>重要语法元素</h3><ul>
 <li><strong>leading_zero_8bits：</strong> 可能出现在第一个NALU之前的一个值为0的前缀字节，不过据实验观察，暂时没有发现出现过该字节。</li>
@@ -456,8 +461,6 @@
 <h3 id="residual"><a href="#residual" class="headerlink" title="residual"></a>residual</h3><p>residual是经过变换和量化后的残差数据，其语法结构如图所示：</p>
 <p>该过程首先会查看熵编码方式，根据熵编码的不同处理有所不同。然后查看是否是Intra_16x16模式，若是则首先将16个DC系数取出单独进行编码，然后再分别对每个4$\times$4块剩下的AC系数进行编码；若不是则对每个4$\times$4块的16个系数进行编码。Y分量编码结束再一次编码U、V分量。</p>
 
-          
-        
       
     </div>
     
@@ -472,183 +475,38 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/26/H-264-AVC简介及相关基本概念/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Regent Tsui">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/25165069?s=400&u=03ba742cd35d3f1bde28035a736fae28e6178c3e&v=4">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Regent's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/26/H-264-AVC简介及相关基本概念/" itemprop="url">H.264/AVC简介及相关基本概念</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-26T20:00:33+08:00">
-                2018-07-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/视频技术/" itemprop="url" rel="index">
-                    <span itemprop="name">视频技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
+            <a href="/tags/H-264/" rel="tag"># H.264</a>
           
-
+            <a href="/tags/Video/" rel="tag"># Video</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>　　由于研究生入了视频安全这个坑，目前主要研究的是H.264的标准，因此决定对自学H.264过程中的知识进行总结并写入博客记录。本文作为第一篇博客，主要对H.264/AVC相关的基本概念进行介绍。</p>
-<h2 id="H-264-AVC简介"><a href="#H-264-AVC简介" class="headerlink" title="H.264/AVC简介"></a>H.264/AVC简介</h2><p>　　H.264是2003年3月正式发布的视频编码标准，又称为先进视频编码(Advanced Video Coding, AVC)，旨在在拥有更高的压缩率的情况下依然能够提供良好视频质量，现已在数字电视广播、实时视频通信、网络流媒体等领域中广泛应用。<br>　　视频编码的最主要目的是数据压缩。例如，图像的每个像素的RGB三个分量各需要一个字节表示，那么每一个像素至少需要3字节，分辨率1280×720的图像的大小为2.76MB，如果帧率为25帧/秒，那么视频的码率将达到69.12MB/s，现有的存储空间和传输带宽难以满足这样的需求，因此原始视频必须进行编码压缩。而视频信息之所以可以被压缩，是因为其本身存在大量的数据冗余。其主要类型有：</p>
-<ol>
-<li>时间冗余：视频相邻的两帧之间内容相似，存在运动关系(帧间预测编码)。</li>
-<li>空间冗余：视频的某一帧内部的相邻像素存在相似性(帧内预测编码)。</li>
-<li>编码冗余：视频中不同数据出现的概率不同(熵编码)。</li>
-<li>视觉冗余：观众的视觉系统对视频中不同的部分敏感度不同(变换编码)。</li>
-</ol>
-<p>　　针对这些不同类型的冗余信息，在各种视频编码的标准算法中都有不同的技术专门应对，以通过不同的角度提高压缩的比率。</p>
-<h2 id="H-264-AVC基本概念"><a href="#H-264-AVC基本概念" class="headerlink" title="H.264/AVC基本概念"></a>H.264/AVC基本概念</h2><p>　　H.264是按照层次组织数据的，其层次结构大致如图所示。<br><img src="https://raw.githubusercontent.com/regenttsui/blogpictures/master/H-264-AVC%E7%AE%80%E4%BB%8B%E5%8F%8A%E7%9B%B8%E5%85%B3%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/H.264_level.png" alt="H.264层级组织"></p>
-<ul>
-<li>宏块(macroblock)：一帧图像通常划分成若干宏块，一个宏块由一个亮度像素块和附加的两个色度像素块组成。H.264中，亮度块为16x16大小的像素块，而两个色度图像像素块的大小依据其图像的采样格式而定，如：对于YUV420采样图像，色度块为8x8大小的像素块。视频编码算法以宏块为单位，逐个宏块进行编码，组织成连续的视频码流。宏块可以进一步进行16x8/8x16/8x8的分割，其中8x8子宏块又可以进一步进行8x4/4x8/4x4的分割。</li>
-<li>片/条带(slice)：每帧的数据可以分为若干个片，包括I/P/B三种片，一般每个片中包含一个或者几个宏块，I slice只含I宏块，P slice可以包含I/P宏块，B slice可以包含I/B宏块。对视频流进行分片处理，既可以方便通信传输，也可以提高视频流的容错能力，因为H.264规定，帧内编码块只能在同一个片中进行帧内预测，这样如果由于传输错误使一个片中的数据丢失，所能影响到的只是同一片中的宏块解码，不会影响到同一帧图像中其他片中的宏块解码。</li>
-<li>帧(frame)和场(field)：帧代表一幅静止的图像，一帧包括两个场，即顶场和底场，顶场是奇数行的数据，底场是偶数行的数据。H.264中主要包括三种类型的帧，即I帧、P帧和B帧。通常I帧的压缩率较低，作为后续帧的重要参考帧，而P帧和B帧由于使用了帧间预测使得压缩率较高，因此视频的压缩率主要取决于P帧和B帧。</li>
-</ul>
-<ol>
-<li>I帧：主要包含I宏块，其只依靠自身的数据进行帧内预测编码，不依赖于其他帧的数据。有一种特殊的I帧叫IDR(Instantaneous Decoding Refresh 即时解码刷新)帧，作用是立刻刷新，在IDR帧之后的所有帧都不能引用在IDR帧之前的帧，从而减少错误传播。由此可知，我们视频播放时常见的在“任意点”播放实际上就是定位到附近的IDR帧进行播放的，而非严格意义上的任意播放。</li>
-<li>P帧：主要包含I宏块和P宏块，P宏块需要利用在它前面的P帧或者I帧进行帧间预测编码，I宏块与I帧中的相似。 </li>
-<li>B帧：主要包含I宏块和B宏块，B宏块数据需要利用在它前面和后面的I帧或P帧进行帧间预测编码。由于B帧的编解码打乱了视频图像的自然顺序，因此不用做参考帧。</li>
-</ol>
-<ul>
-<li>GOP(Group of Picture图像组)：一个视频序列包含若干个GOP，一个GOP包含若干幅图像，图像可以是I/P/B帧中的任意类型。其中一个GOP的第一帧必定是I帧。</li>
-<li>帧内预测：编码时，利用同一帧内的其他像素的数据对当前像素数据进行预测，然后用当前像素的真实值减去预测值得到残差，供后续编码使用。残差相对于原始数据通常小很多，可以减少编码的数据量。 </li>
-<li>帧间预测：帧间预测有两个重要概念：运动估计和运动补偿。运动估计是寻找当前编码块在已编码编码图像(称为参考帧)中的最佳对应块，并计算出两者的偏移(即运动矢量)。运动补偿就是根据运动矢量和帧间预测方法，求得当前块的估计值的过程。它旨在说明当前图像的每一个像素如何由其参考图像得到的。同样的，帧间预测编码的也是残差数据。</li>
-<li>变换编码：对信号进行某种函数变换，使其从一种空间转换到另一空间，然后利用信号在另一空间的特性进行压缩。例如把视频信号从空域转换到频域，使得图像的低频系数集中于左上角，频率向右下角递增。H.264中主要用到离散余弦变换(DCT)和哈达玛(Hadamard)变换，其中DCT变换使用的是整数DCT变换。</li>
-<li>量化：量化即令每个输出除以一个数(量化步长)然后取整，得到较小的量化输出，从而减少编码的数据量，属于有损压缩。  </li>
-<li>熵编码：根据统计特性设计的无损编码算法，能够十分有效地对数据进行压缩，H.264中主要使用了指数哥伦布编码(Exp-Golomb Code)、上下文自适应的变长编码(CAVLC)和上下文自适应的二进制算术编码(CABAC)。</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/26/H-264-AVC简介及相关基本概念/" rel="next" title="H.264/AVC简介及相关基本概念">
+                <i class="fa fa-chevron-left"></i> H.264/AVC简介及相关基本概念
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
       
     </footer>
   </div>
@@ -658,10 +516,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -669,6 +528,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -689,8 +552,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -754,6 +626,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#H-264的分层编码"><span class="nav-number">1.</span> <span class="nav-text">H.264的分层编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#H-264的语法结构"><span class="nav-number">2.</span> <span class="nav-text">H.264的语法结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#NAL流"><span class="nav-number">2.1.</span> <span class="nav-text">NAL流</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#重要语法元素"><span class="nav-number">2.1.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NALU"><span class="nav-number">2.2.</span> <span class="nav-text">NALU</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#重要语法元素-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RBSP"><span class="nav-number">2.3.</span> <span class="nav-text">RBSP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#序列参数集-Sequence-Paramater-Set，SPS"><span class="nav-number">2.3.1.</span> <span class="nav-text">序列参数集(Sequence Paramater Set，SPS)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重要语法元素-2"><span class="nav-number">2.3.1.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#图像参数集-Picture-Paramater-Set，PPS"><span class="nav-number">2.3.2.</span> <span class="nav-text">图像参数集(Picture Paramater Set，PPS)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重要语法元素-3"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#没有分割的Slice-slice-layer-without-partitioning-rbsp"><span class="nav-number">2.3.3.</span> <span class="nav-text">没有分割的Slice(slice_layer_without_partitioning_rbsp)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#slice-header"><span class="nav-number">2.3.4.</span> <span class="nav-text">slice_header</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重要语法元素-4"><span class="nav-number">2.3.4.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#slice-data"><span class="nav-number">2.3.5.</span> <span class="nav-text">slice_data</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重要语法元素-5"><span class="nav-number">2.3.5.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#macroblock-layer"><span class="nav-number">2.3.6.</span> <span class="nav-text">macroblock_layer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重要语法元素-6"><span class="nav-number">2.3.6.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mb-pred"><span class="nav-number">2.3.7.</span> <span class="nav-text">mb_pred</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重要语法元素-7"><span class="nav-number">2.3.7.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sub-mb-pred"><span class="nav-number">2.3.8.</span> <span class="nav-text">sub_mb_pred</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重要语法元素-8"><span class="nav-number">2.3.8.1.</span> <span class="nav-text">重要语法元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#residual"><span class="nav-number">2.3.9.</span> <span class="nav-text">residual</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -915,6 +803,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
