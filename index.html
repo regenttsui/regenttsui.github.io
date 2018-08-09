@@ -437,7 +437,7 @@
 <li><strong>transform_size_8x8_flag ：</strong> 满足一定条件时会出现该元素表明是否采用8x8变换，若不存在该元素，默认不采用。</li>
 <li><strong>mb_pred：</strong> 宏块预测的语法结构，宏块预测与子宏块预测只会存在一个。(重要)</li>
 <li><strong>coded_block_pattern：</strong> 非Intra_16$\times$16模式时存在，用于指明8$\times$8块是否含有非零系数。共有6位，前两位分别代表UV分量的两个8$\times$8块，后四位从低到高代表Y分量的四个8$\times$8块(按扫描顺序)。值为0代表无非零系数，1代表至少有一个非零系数。Intra_16$\times$16模式时coded_block_pattern隐含在mb_type中。该元素的主要作用时提高解码效率。</li>
-<li><strong>mb_qp_delta：</strong> 如前所述，宏块层指明的QP偏移，范围是[-26, +25]此时每一个slice第一个宏块的计算公式为：<br>QP$_0$ = pic_init_qp_minus26 + 26 + slice_qp_delta + mb_qp_delta。<br>而后续宏块QP的计算公式为：<br>QP$n$ = (QP${n-1)$ + mb_qp_delta + 52) % 52<br>注意n-1是从编码顺序角度而言的。</li>
+<li><strong>mb_qp_delta：</strong> 如前所述，宏块层指明的QP偏移，范围是[-26, +25]此时每一个slice第一个宏块的计算公式为：<br>$$QP_0 = pic_init_qp_minus26 + 26 + slice_qp_delta + mb_qp_delta$$<br>而后续宏块QP的计算公式为：<br>$$QP_n = (QP_{(n-1)} + mb_qp_delta + 52) % 52$$<br>注意n-1是从编码顺序角度而言的。</li>
 <li><strong>residual：</strong> 残差编码数据。(重要)</li>
 </ul>
 <h3 id="mb-pred"><a href="#mb-pred" class="headerlink" title="mb_pred"></a>mb_pred</h3><p>mb_pred语法结构如图所示：</p>
