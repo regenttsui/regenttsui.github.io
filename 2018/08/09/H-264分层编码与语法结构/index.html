@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="H.264的分层编码H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。 H.264的语法结构">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-09T12:38:31.799Z">
+<meta property="og:updated_time" content="2018-08-12T13:09:11.262Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="H.264分层编码与语法结构">
 <meta name="twitter:description" content="H.264的分层编码H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。 H.264的语法结构">
@@ -369,7 +369,7 @@
 
       
         <h1 id="H-264的分层编码"><a href="#H-264的分层编码" class="headerlink" title="H.264的分层编码"></a>H.264的分层编码</h1><p>H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。</p>
-<h1 id="H-264的语法结构"><a href="#H-264的语法结构" class="headerlink" title="H.264的语法结构"></a>H.264的语法结构</h1><h2 id="NAL流"><a href="#NAL流" class="headerlink" title="NAL流"></a>NAL流</h2><p>H.264编码得到文件即是一个NAL码流，NAL码流的基本单位是一个个的NAL单元(NAL Unit，NALU)。NALU的组织格式包括Annex B格式以及RTP格式，这里主要用到的是Annex B格式。标准中Annex B格式的NAL流的语法结构如图所示：</p>
+<h1 id="H-264的语法结构"><a href="#H-264的语法结构" class="headerlink" title="H.264的语法结构"></a>H.264的语法结构</h1><h2 id="NAL流"><a href="#NAL流" class="headerlink" title="NAL流"></a>NAL流</h2><p>H.264编码得到文件即是一个NAL码流，NAL码流的基本单位是一个个的NAL单元(NAL Unit，NALU)。NALU的组织格式包括Annex B格式以及RTP格式，这里主要用到的是Annex B格式。</p>
 <h3 id="重要语法元素"><a href="#重要语法元素" class="headerlink" title="重要语法元素"></a>重要语法元素</h3><ul>
 <li><strong>leading_zero_8bits：</strong> 可能出现在第一个NALU之前的一个值为0的前缀字节，不过据实验观察，暂时没有发现出现过该字节。</li>
 <li><strong>zero_byte：</strong> 零字节，当NALU为SPS、PPS时会出现。此外，由于一帧图像可能分为一个或多个slice，每一个slice对应一个NALU，因此在一帧图像的第一个slice的NALU中会出现。</li>
@@ -377,7 +377,7 @@
 <li><strong>nal_unit：</strong> 一个NALU的数据，后面详述。</li>
 <li><strong>trailing_zero_8bits：</strong> 和leading_zero_8bits相似的零字节，但是出现在结尾处，通常编码结果也没有包含该部分。</li>
 </ul>
-<h2 id="NALU"><a href="#NALU" class="headerlink" title="NALU"></a>NALU</h2><p>首先需要说明几个概念：数据包特串(String of Data Bit，SODB)指的是编码器编码出来的最原始的码流；原始字节序列载荷(Raw Byte Sequence Payload，RBSP)指的是通过字节对齐把SODB变为整字节的形式，并加上一些；NALU则是在RBSP的基础上再加上各种头部数据，并进行了防止RBSP出现与起始码相同的数据的防竞争操作。NALU的语法结构如图所示：</p>
+<h2 id="NALU"><a href="#NALU" class="headerlink" title="NALU"></a>NALU</h2><p>首先需要说明几个概念：数据包特串(String of Data Bit，SODB)指的是编码器编码出来的最原始的码流；原始字节序列载荷(Raw Byte Sequence Payload，RBSP)指的是通过字节对齐把SODB变为整字节的形式，并加上一些；NALU则是在RBSP的基础上再加上各种头部数据，并进行了防止RBSP出现与起始码相同的数据的防竞争操作。</p>
 <h3 id="重要语法元素-1"><a href="#重要语法元素-1" class="headerlink" title="重要语法元素"></a>重要语法元素</h3><ul>
 <li><strong>forbidden_zero_bit：</strong> 值为0的一个bit。</li>
 <li><strong>nal_ref_idc：</strong> 指示NALU优先级的2个bit，取值为0-3，值越大优先级越高，对于SPS、PPS和图像数据等的NALU该值必须大于0。</li>
@@ -390,7 +390,7 @@
 <li><strong>rbsp_stop_one_bit：</strong> 值为1的1个bit。</li>
 <li><strong>rbsp_alignment_zero_bit：</strong> 用作字节对齐的值为的0若干bit。</li>
 </ul>
-<h3 id="序列参数集-Sequence-Paramater-Set，SPS"><a href="#序列参数集-Sequence-Paramater-Set，SPS" class="headerlink" title="序列参数集(Sequence Paramater Set，SPS)"></a>序列参数集(Sequence Paramater Set，SPS)</h3><p>包含编码序列的一些参数，语法结构如图所示：</p>
+<h3 id="序列参数集-Sequence-Paramater-Set，SPS"><a href="#序列参数集-Sequence-Paramater-Set，SPS" class="headerlink" title="序列参数集(Sequence Paramater Set，SPS)"></a>序列参数集(Sequence Paramater Set，SPS)</h3><p>包含编码序列的一些参数。</p>
 <h4 id="重要语法元素-2"><a href="#重要语法元素-2" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
 <li><strong>profile_idc、level_idc：</strong> 指明编码所用的profile和level，这两者主要是对编码支持的特性和能力做出的约束规定，具体可查看标准。</li>
 <li><strong>seq_parameter_set_id：</strong> 指明该SPS的ID，该ID由PPS引用。</li>
@@ -399,7 +399,7 @@
 <li><strong>frame_cropping_flag：</strong> 指明是否需要对图像进行裁剪。</li>
 <li><strong>frame_crop_left_offset、frame_crop_right_offset、frame_crop_top_offset、frame_crop_bottom_offset：</strong> 若要裁剪，则指明左右上下裁剪的宽度。</li>
 </ul>
-<h3 id="图像参数集-Picture-Paramater-Set，PPS"><a href="#图像参数集-Picture-Paramater-Set，PPS" class="headerlink" title="图像参数集(Picture Paramater Set，PPS)"></a>图像参数集(Picture Paramater Set，PPS)</h3><p>包含编码图像的一些参数，语法结构如图所示：</p>
+<h3 id="图像参数集-Picture-Paramater-Set，PPS"><a href="#图像参数集-Picture-Paramater-Set，PPS" class="headerlink" title="图像参数集(Picture Paramater Set，PPS)"></a>图像参数集(Picture Paramater Set，PPS)</h3><p>包含编码图像的一些参数。</p>
 <h4 id="重要语法元素-3"><a href="#重要语法元素-3" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
 <li><strong>pic_parameter_set_id：</strong> 指明该PPS的ID，该ID由Slice的RBSP引用。</li>
 <li><strong>seq_parameter_set_id：</strong> 所引用的SPS的ID。</li>
@@ -414,7 +414,7 @@
 <li><strong>transform_8x8_mode_flag：</strong> 为1时表示使用8$\times$8变换代替4$\times$4变换。</li>
 </ul>
 <h3 id="没有分割的Slice-slice-layer-without-partitioning-rbsp"><a href="#没有分割的Slice-slice-layer-without-partitioning-rbsp" class="headerlink" title="没有分割的Slice(slice_layer_without_partitioning_rbsp)"></a>没有分割的Slice(slice_layer_without_partitioning_rbsp)</h3><p>本文主要针对该种slice形式的RBSP。slice包含了视频编码的数据，主要包括了slice_header、slice_data和rbsp_slice_trailing_bits三个部分，其中结尾元素上文已经介绍，因此主要介绍前两者。</p>
-<h3 id="slice-header"><a href="#slice-header" class="headerlink" title="slice_header"></a>slice_header</h3><p>slice_header是头部信息，包含了该slice的相关参数，语法结构如图所示：</p>
+<h3 id="slice-header"><a href="#slice-header" class="headerlink" title="slice_header"></a>slice_header</h3><p>slice_header是头部信息，包含了该slice的相关参数。</p>
 <h4 id="重要语法元素-4"><a href="#重要语法元素-4" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
 <li><strong>first_mb_in_slice</strong> 指明该slice中第一个宏块的位置。</li>
 <li><strong>slice_type：</strong> 指明slice的类型，例如2代表I slice，0代表P slice，1代表B slice。</li>
@@ -425,7 +425,7 @@
 <li><strong>slice_qp_delta：</strong> 上面提到的，这是slice头中指明的QP偏移。</li>
 <li><strong>disable_deblocking_filter_idc：</strong> 又一个控制滤波的参数。</li>
 </ul>
-<h3 id="slice-data"><a href="#slice-data" class="headerlink" title="slice_data"></a>slice_data</h3><p>slice_data是slice的主体部分，包含了真正的视频编码数据，语法结构如图所示：</p>
+<h3 id="slice-data"><a href="#slice-data" class="headerlink" title="slice_data"></a>slice_data</h3><p>slice_data是slice的主体部分，包含了真正的视频编码数据。</p>
 <h4 id="重要语法元素-5"><a href="#重要语法元素-5" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
 <li><strong>cabac_alignment_one_bit</strong> 采用CABAC时，要求slice头的数据要先对齐，因此会先出现若干bit的1来进行字节对齐。</li>
 <li><strong>mb_skip_run：</strong> 采用CAVLC时方存在，携带该元素的P/B宏块指明该宏块之前一共有几个连续的P_Skip/B_Skip宏块，skip宏块不包括任何编码数据，仅仅利用预测信息进行重构。</li>
@@ -433,7 +433,7 @@
 <li><strong>macroblock_layer ：</strong> 宏块层，包括所有宏块的数据。(重要)</li>
 <li><strong>end_of_slice_flag：</strong> 为0时表明该slice仍有宏块未编码；为1时表示已到达slice结尾。</li>
 </ul>
-<h3 id="macroblock-layer"><a href="#macroblock-layer" class="headerlink" title="macroblock_layer"></a>macroblock_layer</h3><p>macroblock_layer是最重要的宏块编码数据所在，语法结构如图所示：</p>
+<h3 id="macroblock-layer"><a href="#macroblock-layer" class="headerlink" title="macroblock_layer"></a>macroblock_layer</h3><p>macroblock_layer是最重要的宏块编码数据所在。</p>
 <h4 id="重要语法元素-6"><a href="#重要语法元素-6" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
 <li><strong>mb_type：</strong> 宏块类型，种类较多，不仅指明是I/P/B宏块，还指明了其宏块分割方式和预测模式。</li>
 <li><strong>pcm_alignment_zero_bit：</strong> 当宏块类型为I_PCM时出现，其要求先用0进行字节对齐。I_PCM是一种特殊的宏块，它不经过变换量化等步骤，而是直接传输像素值，属于比较少见的类型。</li>
@@ -445,21 +445,18 @@
 <li><strong>mb_qp_delta：</strong> 如前所述，宏块层指明的QP偏移，范围是[-26, +25]此时每一个slice第一个宏块的计算公式为：<br>$$QP_0 = pic_init_qp_minus26 + 26 + slice_qp_delta + mb_qp_delta$$<br>而后续宏块QP的计算公式为：<br>$$QP_n = (QP_{n-1} + mb_qp_delta + 52) \% 52$$<br>注意n-1是从编码顺序角度而言的。</li>
 <li><strong>residual：</strong> 残差编码数据。(重要)</li>
 </ul>
-<h3 id="mb-pred"><a href="#mb-pred" class="headerlink" title="mb_pred"></a>mb_pred</h3><p>mb_pred语法结构如图所示：</p>
-<h4 id="重要语法元素-7"><a href="#重要语法元素-7" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
+<h3 id="mb-pred"><a href="#mb-pred" class="headerlink" title="mb_pred"></a>mb_pred</h3><h4 id="重要语法元素-7"><a href="#重要语法元素-7" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
 <li><strong>prev_intra4x4_pred_mode_flag，rem_intra4x4_pred_mode：：</strong> intra_4$\times$4预测时，用于指示预测的预测模式(有点拗口)是否等于真正的预测模式。1代表相等；0代表不相等，此时需要额外用rem_intra4x4_pred_mode指定真实模式。该种做法的目的在于两者相等时可以减少编码数据量。</li>
 <li><strong>intra_chroma_pred_mode：</strong> 当采用帧内预测时存在该元素，用于指明色度分量的预测模式。</li>
 <li><strong>ref_idx_l0、ref_idx_l1：</strong> 前、后向参考帧队列，通过其中的索引号mbPartIdx可以找到参考帧。</li>
 <li><strong>mvd_l0、mvd_l1：</strong> 前、后向运动矢量差值，包括水平和垂直两个分量。其中compIdx=0为水平方向的值，compIdx=1位垂直方向的值。</li>
 </ul>
-<h3 id="sub-mb-pred"><a href="#sub-mb-pred" class="headerlink" title="sub_mb_pred"></a>sub_mb_pred</h3><p>sub_mb_pred语法结构如图所示：</p>
-<h4 id="重要语法元素-8"><a href="#重要语法元素-8" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
+<h3 id="sub-mb-pred"><a href="#sub-mb-pred" class="headerlink" title="sub_mb_pred"></a>sub_mb_pred</h3><h4 id="重要语法元素-8"><a href="#重要语法元素-8" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
 <li><strong>sub_mb_type：</strong> 子宏块类型。</li>
 <li><strong>ref_idx_l0、ref_idx_l1：</strong> 同mb_pred。</li>
 <li><strong>mvd_l0、mvd_l1：</strong> 同mb_pred。</li>
 </ul>
-<h3 id="residual"><a href="#residual" class="headerlink" title="residual"></a>residual</h3><p>residual是经过变换和量化后的残差数据，其语法结构如图所示：</p>
-<p>该过程首先会查看熵编码方式，根据熵编码的不同处理有所不同。然后查看是否是Intra_16x16模式，若是则首先将16个DC系数取出单独进行编码，然后再分别对每个4$\times$4块剩下的AC系数进行编码；若不是则对每个4$\times$4块的16个系数进行编码。Y分量编码结束再一次编码U、V分量。</p>
+<h3 id="residual"><a href="#residual" class="headerlink" title="residual"></a>residual</h3><p>该过程首先会查看熵编码方式，根据熵编码的不同处理有所不同。然后查看是否是Intra_16x16模式，若是则首先将16个DC系数取出单独进行编码，然后再分别对每个4$\times$4块剩下的AC系数进行编码；若不是则对每个4$\times$4块的16个系数进行编码。Y分量编码结束再一次编码U、V分量。</p>
 
       
     </div>
