@@ -88,7 +88,7 @@
 <meta property="og:description" content="H.264的分层编码　　H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。 H.264的语法">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://raw.githubusercontent.com/regenttsui/blogpictures/master/H.264%E5%88%86%E5%B1%82%E7%BC%96%E7%A0%81%E5%8F%8A%E8%AF%AD%E6%B3%95%E5%85%83%E7%B4%A0/level_code.png">
-<meta property="og:updated_time" content="2018-08-26T12:04:12.136Z">
+<meta property="og:updated_time" content="2018-08-26T12:21:42.568Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="H.264分层编码与语法结构">
 <meta name="twitter:description" content="H.264的分层编码　　H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。 H.264的语法">
@@ -446,7 +446,7 @@
 <li><strong>coded_block_pattern：</strong> 非Intra_16$\times$16模式时存在，用于指明8$\times$8块是否含有非零系数。共有6位，前两位分别代表UV分量的两个8$\times$8块，后四位从低到高代表Y分量的四个8$\times$8块(按扫描顺序)。值为0代表无非零系数，1代表至少有一个非零系数。Intra_16$\times$16模式时coded_block_pattern隐含在mb_type中。该元素的主要作用时提高解码效率。</li>
 <li><strong>mb_qp_delta：</strong> 如前所述，宏块层指明的QP偏移，范围是[-26, +25]此时每一个slice第一个宏块的计算公式为：</li>
 </ul>
-<p>$$QP_0 = pic init qp minus26 + 26 + slice qp delta + mb qp delta$$<br>而后续宏块QP的计算公式为：<br>$$QP_n = (QP_{n-1} + mb_qp_delta + 52) \% 52$$<br>注意n-1是从编码顺序角度而言的。</p>
+<p>$$QP_0 = pic init qp minus26 + 26 + slice qp delta + mb qp delta$$<br>而后续宏块QP的计算公式为：<br>$$QP_n = (QP_{n-1} + mb\_qp_delta + 52) \% 52$$<br>注意n-1是从编码顺序角度而言的。</p>
 <ul>
 <li><strong>residual：</strong> 残差编码数据。(重要)</li>
 </ul>

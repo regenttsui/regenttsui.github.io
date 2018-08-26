@@ -439,7 +439,7 @@
 <li><strong>coded_block_pattern：</strong> 非Intra_16$\times$16模式时存在，用于指明8$\times$8块是否含有非零系数。共有6位，前两位分别代表UV分量的两个8$\times$8块，后四位从低到高代表Y分量的四个8$\times$8块(按扫描顺序)。值为0代表无非零系数，1代表至少有一个非零系数。Intra_16$\times$16模式时coded_block_pattern隐含在mb_type中。该元素的主要作用时提高解码效率。</li>
 <li><strong>mb_qp_delta：</strong> 如前所述，宏块层指明的QP偏移，范围是[-26, +25]此时每一个slice第一个宏块的计算公式为：</li>
 </ul>
-<p>$$QP_0 = pic init qp minus26 + 26 + slice qp delta + mb qp delta$$<br>而后续宏块QP的计算公式为：<br>$$QP_n = (QP_{n-1} + mb_qp_delta + 52) \% 52$$<br>注意n-1是从编码顺序角度而言的。</p>
+<p>$$QP_0 = pic init qp minus26 + 26 + slice qp delta + mb qp delta$$<br>而后续宏块QP的计算公式为：<br>$$QP_n = (QP_{n-1} + mb\_qp_delta + 52) \% 52$$<br>注意n-1是从编码顺序角度而言的。</p>
 <ul>
 <li><strong>residual：</strong> 残差编码数据。(重要)</li>
 </ul>
