@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)–位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)–lencod.c read">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-11T12:51:13.135Z">
+<meta property="og:updated_time" content="2018-09-11T13:06:24.651Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（二）——编解码流程与trace文件使用">
 <meta name="twitter:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)–位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)–lencod.c read">
@@ -406,16 +406,13 @@
 <ul>
 <li>@88：每一行开头出现的“@+数字”代表的是编码这一行的元素前已经编码了的比特数</li>
 <li>01001101 ( 77)：每一行末尾出现的这两个数字串，括号外的是当前编码元素在码流中的二进制表示，括号内的则是十进制值</li>
-<li>Annex B NALU w/ long startcode, len 5,<pre><code>forbidden_bit       0,
-nal_reference_idc   3,
-nal_unit_type       8：每一个NALU最后都会出现，包含了一个NALU的比特数长度和一些头信息，其中len是不包括startcode的长度的
-</code></pre></li>
+<li>Annex B NALU w/ long startcode, len 5,<br>forbidden_bit       0,<br>nal_reference_idc   3,<br>nal_unit_type       8：每一个NALU最后都会出现，包含了一个NALU的比特数长度和一些头信息，其中len是不包括startcode的长度的</li>
 <li>mb_type (I_SLICE) ( 0, 0) =   9：( 0, 0)代表宏块的坐标，9代表宏块编码模式，与代码中定义的枚举类型MBModeTypes一致，同时也是currMB-&gt;mb_type这个变量的值</li>
 <li>Intra 4x4 mode  = predicted (context: 0)/Intra 4x4 mode  =   5 (context: 7)：当亮度4x4预测模式的预测值与真实值相等时为前者，不相等时为后者</li>
 <li>mb_skip_run：以CAVLC为熵编码时出现，只出现在非skip宏块中，用以表示其前面一共有几个连续的skip宏块，一个例外是当一帧的最后一个宏块是skip宏块时，它也会包含该元素，表示包括自身在内的之前出现的连续skip宏块数。另外，该元素在解码的时候会在碰到连续宏块的第一个宏块时就被解码，用以确定接下来一共有几个连续的skip宏块，因此在trace_dec.txt文件中它出现的地方和trace_enc.txt是不一样的。</li>
 <li>8x8 mode/pdir( 0) =   4/1：P8x8模式时出现，( 0)代表这是第几个8x8块(0-3)；4/1与前面的mode/pdir对应，4(mode)即代表8x8的子分块模式，和MBModeTypes里的值是对应的，0：BSKIP_DIRECT，4：8x8，5：8x4，6：4x8，7：4x4；1(pdir)代表预测方向，0为前向，1为后向，2为双向；需要注意的是：这里的mode和pdir并不能涵盖程序中的b8x8[k].mode和b8x8[k].pdir两个变量的所有含义，因为它们会有更多的取值和组合含义，如b8x8[k].pdir=-1是表示是I宏块，没有帧间预测；b8x8[k].mode=1、2、3分别对应P16X16/16x8/8X16</li>
 <li>ref_idx_l0 = 0/ref_idx_l1 = 1：参考帧索引，l0/l1代表前/后向，对它们两个中的任意一个而言，在一个宏块中最多出现4个(4个8x8块)，因为8x8块的参考帧索引会应用到其包含的4个4x4块中。最少一个都不用出现，因为没有参考帧或者不用编码参考帧</li>
-<li>mvd_l0 (0) =   -2  (org_mv -187 pred_mv -185)<br>/mvd_l0 (1) =   0  (org_mv   0 pred_mv   0)<br>/mvd_l1 (0) =   0  (org_mv   0 pred_mv   0)<br>/mvd_l1 (1) =   7  (org_mv   0 pred_mv  -7)：运动矢量，根据分块的模式不同会有不同的个数，由于分x方向和y方向，所以一定是偶数个，16x16有2个，16x8和8x16有4个，8x8至少有8个，具体要看8x8是否还会在分成4x8/8x4/4x4；mvd_l0是前向运动矢量，mvd_l1是后向运动矢量；(0)是x方向，(1)是y方向；几个数字的含义也很清晰，分别是mvd、真实的mv和预测mv</li>
+<li>mvd_l0 (0) =   -2  (org_mv -187 pred_mv -185)<br>mvd_l0 (1) =   0  (org_mv   0 pred_mv   0)<br>mvd_l1 (0) =   0  (org_mv   0 pred_mv   0)<br>mvd_l1 (1) =   7  (org_mv   0 pred_mv  -7)：运动矢量，根据分块的模式不同会有不同的个数，由于分x方向和y方向，所以一定是偶数个，16x16有2个，16x8和8x16有4个，8x8至少有8个，具体要看8x8是否还会在分成4x8/8x4/4x4；mvd_l0是前向运动矢量，mvd_l1是后向运动矢量；(0)是x方向，(1)是y方向；几个数字的含义也很清晰，分别是mvd、真实的mv和预测mv</li>
 <li>Luma # c &amp; tr.1s(0,0) vlc=0 #c=2 #t1=1：Luma表示编码的是什么类型的DCT系数，与CAVLCBlockTypes这个枚举类型的值对应；(0,0)表示当前4x4块在一个宏块中的坐标(范围均是0-3)；vlc表示查标准中表9-5的哪一列，c是非零系数个数，t1是拖尾系数个数</li>
 <li>Luma trailing ones sign (1,0)：(1,0)是4x4块在一个宏块中的坐标</li>
 <li>Luma lev (1,0) k=4 vlc=0 lev=  2：(1,0)是4x4块在一个宏块中的坐标，k是除去拖尾系数后的第几个非零系数，逆序；vlc是suffixLength的值；lev是系数值</li>
