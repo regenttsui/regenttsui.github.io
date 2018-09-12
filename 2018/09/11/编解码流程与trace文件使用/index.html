@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)–位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)–lencod.c read">
+<meta name="description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)——lencod.c re">
 <meta name="keywords" content="H.264,Video,JM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（二）——编解码流程与trace文件使用">
 <meta property="og:url" content="http://yoursite.com/2018/09/11/编解码流程与trace文件使用/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
-<meta property="og:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)–位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)–lencod.c read">
+<meta property="og:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)——lencod.c re">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-11T13:06:24.651Z">
+<meta property="og:updated_time" content="2018-09-12T11:02:43.724Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（二）——编解码流程与trace文件使用">
-<meta name="twitter:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)–位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)–lencod.c read">
+<meta name="twitter:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)——lencod.c re">
 
 
 
@@ -371,36 +371,36 @@
         <p>本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。</p>
 <h1 id="编码流程"><a href="#编码流程" class="headerlink" title="编码流程"></a>编码流程</h1><p>编码流程的主要函数调用顺序以及所在文件如下：</p>
 <ol>
-<li>encode_sequence(p_Enc-&gt;p_Vid, p_Enc-&gt;p_Inp)–位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口</li>
-<li>encode_one_frame(p_Vid, p_Inp)–lencod.c</li>
-<li>read_input_data (p_Vid)–image.c，从文件读取一帧图像</li>
-<li>process_image(p_Vid, p_Inp)–image.c，将读取到的图像imgData0复制一份到imgData用于编码</li>
-<li>perform_encode_frame(p_Vid)–image.c，帧编码时进行调用，若是场编码则调用perform_encode_field(p_Vid)</li>
-<li>frame_picture(p_Vid, p_Vid-&gt;frame_pic[0], &amp;p_Vid-&gt;imgData, 0)–image.c</li>
-<li>code_a_picture(p_Vid, frame)–image.c</li>
-<li>code_a_plane(p_Vid, p_Inp)–image.c，按顺序编码一帧图像的所有宏块，同时编码时区分了slice组和slice</li>
-<li>encode_one_slice (p_Vid, SliceGroup, NumberOfCodedMBs)–slice.c，编码帧内的一个slice，返回编码的宏块数</li>
+<li><strong>encode_sequence(p_Enc-&gt;p_Vid, p_Enc-&gt;p_Inp)</strong>——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口</li>
+<li><strong>encode_one_frame(p_Vid, p_Inp)</strong>——lencod.c</li>
+<li><strong>read_input_data (p_Vid)</strong>——image.c，从文件读取一帧图像</li>
+<li><strong>process_image(p_Vid, p_Inp)</strong>——image.c，将读取到的图像imgData0复制一份到imgData用于编码</li>
+<li><strong>perform_encode_frame(p_Vid)</strong>——image.c，帧编码时进行调用，若是场编码则调用perform_encode_field(p_Vid)</li>
+<li><strong>frame_picture(p_Vid, p_Vid-&gt;frame_pic[0], &amp;p_Vid-&gt;imgData, 0)</strong>——image.c</li>
+<li><strong>code_a_picture(p_Vid, frame)</strong>——image.c</li>
+<li><strong>code_a_plane(p_Vid, p_Inp)</strong>——image.c，按顺序编码一帧图像的所有宏块，同时编码时区分了slice组和slice</li>
+<li><strong>encode_one_slice (p_Vid, SliceGroup, NumberOfCodedMBs)</strong>——slice.c，编码帧内的一个slice，返回编码的宏块数</li>
 <li>以下三个函数均在encode_one_slice中，是编码时最重要的三个函数：<ul>
-<li>currSlice-&gt;encode_one_macroblock(currMB)–编码宏块主要的函数，在rdopt.c中根据rdopt的值该函数指针指向了不同的函数，默认为encode_one_macroblock_high，该函数进行所有帧内/帧间模式的编码，通过比较后得到率失真代价最小的一种模式，来作为该宏块真正的编码模式，同时得到所有需要编码的语法元素的值</li>
-<li>end_encode_one_macroblock(currMB)–编码完一个宏块后，更新宏块参数</li>
-<li>write_macroblock(currMB, 1)–将语法元素进行真正的熵编码并写入码流</li>
+<li><strong>currSlice-&gt;encode_one_macroblock(currMB)</strong>——编码宏块主要的函数，在rdopt.c中根据rdopt的值该函数指针指向了不同的函数，默认为encode_one_macroblock_high，该函数进行所有帧内/帧间模式的编码，通过比较后得到率失真代价最小的一种模式，来作为该宏块真正的编码模式，同时得到所有需要编码的语法元素的值</li>
+<li><strong>end_encode_one_macroblock(currMB)</strong>——编码完一个宏块后，更新宏块参数</li>
+<li><strong>write_macroblock(currMB, 1)</strong>——将语法元素进行真正的熵编码并写入码流</li>
 </ul>
 </li>
 </ol>
 <h1 id="解码流程"><a href="#解码流程" class="headerlink" title="解码流程"></a>解码流程</h1><p>解码流程的主要函数调用顺序以及所在文件如下：</p>
 <ol>
-<li>DecodeOneFrame(&amp;pDecPicList)–位于decode_test.c的main函数中，循环解码每一帧</li>
-<li>decode_one_frame(pDecoder)–ldecod.c</li>
-<li>read_new_slice(currSlice)–image.c，从码流文件中读取一个slice</li>
-<li>decode_slice(currSlice, current_header)–image.c</li>
-<li>decode_one_slice(currSlice)–image.c</li>
+<li><strong>DecodeOneFrame(&amp;pDecPicList)</strong>——位于decode_test.c的main函数中，循环解码每一帧</li>
+<li><strong>decode_one_frame(pDecoder)</strong>——ldecod.c</li>
+<li><strong>read_new_slice(currSlice)</strong>——image.c，从码流文件中读取一个slice</li>
+<li><strong>decode_slice(currSlice, current_header)—</strong>—image.c</li>
+<li><strong>decode_one_slice(currSlice)</strong>——image.c</li>
 <li>以下三个函数均在decode_one_slice中，是解码时最重要的三个函数：<ul>
-<li>start_macroblock(currSlice, &amp;currMB)–初始化宏块的各种参数</li>
-<li>currSlice-&gt;read_one_macroblock(currMB)–从码流中读取和解析一个宏块的语法元素，根据slice类型不同可能会指向read_one_macroblock_i_slice_cavlc、read_one_macroblock_p_slice_cavlc、read_one_macroblock_b_slice_cavlc等等</li>
-<li>decode_one_macroblock(currMB, currSlice-&gt;dec_picture);–将语法元素和预测结合，从而解码还原出一个宏块的像素</li>
+<li><strong>start_macroblock(currSlice, &amp;currMB)</strong>——初始化宏块的各种参数</li>
+<li><strong>currSlice-&gt;read_one_macroblock(currMB)</strong>——从码流中读取和解析一个宏块的语法元素，根据slice类型不同可能会指向read_one_macroblock_i_slice_cavlc、read_one_macroblock_p_slice_cavlc、read_one_macroblock_b_slice_cavlc等等</li>
+<li><strong>decode_one_macroblock(currMB, currSlice-&gt;dec_picture)</strong>——将语法元素和预测结合，从而解码还原出一个宏块的像素</li>
 </ul>
 </li>
-<li>WriteOneFrame()–位于decode_test.c的main函数中，将一帧图像写入YUV文件</li>
+<li><strong>WriteOneFrame()</strong>——位于decode_test.c的main函数中，将一帧图像写入YUV文件</li>
 </ol>
 <h1 id="trace文件"><a href="#trace文件" class="headerlink" title="trace文件"></a>trace文件</h1><p>当把defines.h中的# define TRACE 0改为# define TRACE 1时，就可以在运行程序时同时生成一个trace_enc.txt/trace_dec.txt文件，这两个文件输出了编解码时的许多重要信息，在某些时候对于调试非常有用。下面以trace_enc.txt为例讲解其中一些输出条目的含义。</p>
 <ul>
@@ -462,6 +462,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/12/宏块访问/" rel="prev" title="H.264/AVC编解码技术及JM源码分析（三）——宏块访问">
+                H.264/AVC编解码技术及JM源码分析（三）——宏块访问 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -542,7 +546,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
