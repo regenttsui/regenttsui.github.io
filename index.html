@@ -362,18 +362,14 @@
 
       
         
-          
-            <p>作为基础，对其他宏块/子块的访问是编解码进行预测时所必不可少的操作，除此以外在许多别的地方也会用到，比如在对系数进行熵编码时。因此本文主要讲解源码中关于宏块访问的知识，这部分代码主要在mb_access.c中。</p>
-<h1 id="mb-is-available"><a href="#mb-is-available" class="headerlink" title="mb_is_available()"></a>mb_is_available()</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Boolean <span class="title">mb_is_available</span><span class="params">(<span class="keyword">int</span> mbAddr, Macroblock *currMB)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  VideoParameters *p_Vid = currMB-&gt;p_Vid;</span><br><span class="line">  <span class="comment">//首先检测地址是否超出当前宏块或不在画面内</span></span><br><span class="line">  <span class="keyword">if</span> ((mbAddr &lt; <span class="number">0</span>) || (mbAddr &gt; ((<span class="keyword">int</span>)p_Vid-&gt;PicSizeInMbs - <span class="number">1</span>)))</span><br><span class="line">    <span class="keyword">return</span> FALSE;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// the following line checks both: slice number and if the mb has been decoded</span></span><br><span class="line">  <span class="comment">// 然后检测当前宏块是否在做去块效应滤波</span></span><br><span class="line">  <span class="keyword">if</span> (!currMB-&gt;DeblockCall)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//如果不是则最后判断当前宏块和待检测宏块是否属于同一个slice</span></span><br><span class="line">    <span class="keyword">if</span> (p_Vid-&gt;mb_data[mbAddr].slice_nr != currMB-&gt;slice_nr)</span><br><span class="line">      <span class="keyword">return</span> FALSE;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> TRUE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>该函数用于检测宏块是否可用，实际上是被其他函数所调用的基础函数。输入参数是待检测宏块的地址和当前宏块，其中宏块地址是按光栅扫描的顺序的序号，即从左到右、从上到下，从0开始编号。主要的条件是宏待检测块需要在画面范围内且在当前宏块位置之前，同时和当前宏块要属于相同slice。因为一般情况下来自不同slice的宏块是不能被使用的，但是如果当前宏块是在做去块效应滤波的话可以忽略该限制。</p>
-<h1 id="CheckAvailabilityOfNeighbors"><a href="#CheckAvailabilityOfNeighbors" class="headerlink" title="CheckAvailabilityOfNeighbors()"></a>CheckAvailabilityOfNeighbors()</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CheckAvailabilityOfNeighbors</span><span class="params">(Macroblock *currMB)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  VideoParameters *p_Vid = currMB-&gt;p_Vid;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span> mb_nr = currMB-&gt;mbAddrX;</span><br><span class="line">  BlockPos *PicPos = p_Vid-&gt;PicPos;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// mark all neighbors as unavailable</span></span><br><span class="line">  <span class="comment">// 预设为不可用</span></span><br><span class="line">  currMB-&gt;mb_up   = <span class="literal">NULL</span>;</span><br><span class="line">  currMB-&gt;mb_left = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (p_Vid-&gt;mb_aff_frame_flag)</span><br><span class="line">  &#123;</span><br><span class="line">      <span class="comment">//忽略一段</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//赋值为周围4个宏块的地址</span></span><br><span class="line">    currMB-&gt;mbAddrA = mb_nr - <span class="number">1</span>;</span><br><span class="line">    currMB-&gt;mbAddrB = mb_nr - p_Vid-&gt;PicWidthInMbs;</span><br><span class="line">    currMB-&gt;mbAddrC = mb_nr - p_Vid-&gt;PicWidthInMbs + <span class="number">1</span>;</span><br><span class="line">    currMB-&gt;mbAddrD = mb_nr - p_Vid-&gt;PicWidthInMbs - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//PicPos数组保存了一帧内所有宏块的坐标(以宏块大小为单位)，通过宏块地址进行查找，左上角坐标为(0,0)</span></span><br><span class="line">    currMB-&gt;mbAvailA = (byte) (mb_is_available(currMB-&gt;mbAddrA, currMB) &amp;&amp; ((PicPos[mb_nr    ].x)!=<span class="number">0</span>));</span><br><span class="line">    currMB-&gt;mbAvailB = (byte) (mb_is_available(currMB-&gt;mbAddrB, currMB));</span><br><span class="line">    currMB-&gt;mbAvailC = (byte) (mb_is_available(currMB-&gt;mbAddrC, currMB) &amp;&amp; ((PicPos[mb_nr + <span class="number">1</span>].x)!=<span class="number">0</span>));</span><br><span class="line">    currMB-&gt;mbAvailD = (byte) (mb_is_available(currMB-&gt;mbAddrD, currMB) &amp;&amp; ((PicPos[mb_nr    ].x)!=<span class="number">0</span>));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (currMB-&gt;mbAvailA) currMB-&gt;mb_left = &amp;(p_Vid-&gt;mb_data[currMB-&gt;mbAddrA]);</span><br><span class="line">  <span class="keyword">if</span> (currMB-&gt;mbAvailB) currMB-&gt;mb_up   = &amp;(p_Vid-&gt;mb_data[currMB-&gt;mbAddrB]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>此函数检测当前宏块的左(A)、上(B)、右上(C)、左上(D)的相邻宏块是否可用，其中左、右上、左上宏块还需要判断是否超出图像的左/右边界，因此后面多出一句判断x坐标的语句。但比较奇怪的是右上邻块应该判断的是右边界但是这里却判断了左边界，暂时未解。</p>
-<h1 id="getNonAffNeighbour"><a href="#getNonAffNeighbour" class="headerlink" title="getNonAffNeighbour()"></a>getNonAffNeighbour()</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getNonAffNeighbour</span><span class="params">(Macroblock *currMB, <span class="keyword">int</span> xN, <span class="keyword">int</span> yN, <span class="keyword">int</span> mb_size[<span class="number">2</span>], PixelPos *pix)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  BlockPos *PicPos = currMB-&gt;p_Vid-&gt;PicPos;</span><br><span class="line">  <span class="keyword">if</span> (xN &lt; <span class="number">0</span>)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//xN和yN均为负值表明是左上的邻块中的像素</span></span><br><span class="line">    <span class="keyword">if</span> (yN &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      pix-&gt;mb_addr   = currMB-&gt;mbAddrD;</span><br><span class="line">      pix-&gt;available = currMB-&gt;mbAvailD;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//左邻块，yN不能超出一个宏块的距离，否则就不是邻块了</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ((yN &gt;= <span class="number">0</span>)&amp;&amp;(yN &lt; mb_size[<span class="number">1</span>]))</span><br><span class="line">    &#123;</span><br><span class="line">      pix-&gt;mb_addr   = currMB-&gt;mbAddrA;</span><br><span class="line">      pix-&gt;available = currMB-&gt;mbAvailA;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//否则不可访问</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      pix-&gt;available = FALSE;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> ((xN &gt;= <span class="number">0</span>)&amp;&amp;(xN &lt; mb_size[<span class="number">0</span>]))</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//上邻块</span></span><br><span class="line">    <span class="keyword">if</span> (yN&lt;<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      pix-&gt;mb_addr   = currMB-&gt;mbAddrB;</span><br><span class="line">      pix-&gt;available = currMB-&gt;mbAvailB;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//xN和yN都在一个宏块距离内，且是正值，显然就是当前宏块内的像素</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (((yN &gt;= <span class="number">0</span>)&amp;&amp;(yN &lt; mb_size[<span class="number">1</span>])))</span><br><span class="line">    &#123;</span><br><span class="line">      pix-&gt;mb_addr   = currMB-&gt;mbAddrX;</span><br><span class="line">      pix-&gt;available = TRUE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      pix-&gt;available = FALSE;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//右上邻块</span></span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> ((xN &gt;= mb_size[<span class="number">0</span>])&amp;&amp;(yN &lt; <span class="number">0</span>))</span><br><span class="line">  &#123;</span><br><span class="line">    pix-&gt;mb_addr   = currMB-&gt;mbAddrC;</span><br><span class="line">    pix-&gt;available = currMB-&gt;mbAvailC;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//否则不可用</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    pix-&gt;available = FALSE;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (pix-&gt;available || currMB-&gt;DeblockCall)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//计算该像素在其所属宏块内的相对坐标</span></span><br><span class="line">    pix-&gt;x     = (<span class="keyword">short</span>) (xN &amp; (mb_size[<span class="number">0</span>] - <span class="number">1</span>));</span><br><span class="line">    pix-&gt;y     = (<span class="keyword">short</span>) (yN &amp; (mb_size[<span class="number">1</span>] - <span class="number">1</span>)); </span><br><span class="line">    <span class="comment">//计算该像素在帧内的绝对坐标</span></span><br><span class="line">    pix-&gt;pos_x = (<span class="keyword">short</span>) (pix-&gt;x + PicPos[ pix-&gt;mb_addr ].x * mb_size[<span class="number">0</span>]);    </span><br><span class="line">    pix-&gt;pos_y = (<span class="keyword">short</span>) (pix-&gt;y + PicPos[ pix-&gt;mb_addr ].y * mb_size[<span class="number">1</span>]);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>此函数作用是在非帧场自适应模式下获取相邻(或当前)宏块内某个像素在帧内的绝对坐标(以像素为单位)以及在其所属宏块内的相对坐标(以像素为单位)。参数中xN和yN是相邻像素以当前宏块(currMB)的左上角像素为原点的相对坐标。mb_size是宏块大小，亮度宏块两个元素均为16，色度宏块两个元素均为8。pix就是用来保存获取到的像素信息的。</p>
-<h1 id="get4x4Neighbour"><a href="#get4x4Neighbour" class="headerlink" title="get4x4Neighbour()"></a>get4x4Neighbour()</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">get4x4Neighbour</span> <span class="params">(Macroblock *currMB, <span class="keyword">int</span> block_x, <span class="keyword">int</span> block_y, <span class="keyword">int</span> mb_size[<span class="number">2</span>], PixelPos *pix)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="comment">//非帧场自适应模式下实际上就是调用上一个函数</span></span><br><span class="line">  currMB-&gt;p_Vid-&gt;getNeighbour(currMB, block_x, block_y, mb_size, pix);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (pix-&gt;available)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//因为是4x4块的原因，所有坐标要除以4</span></span><br><span class="line">    pix-&gt;x &gt;&gt;= <span class="number">2</span>;</span><br><span class="line">    pix-&gt;y &gt;&gt;= <span class="number">2</span>;</span><br><span class="line">    pix-&gt;pos_x &gt;&gt;= <span class="number">2</span>;</span><br><span class="line">    pix-&gt;pos_y &gt;&gt;= <span class="number">2</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>此函数与上一个函数相似，作用是获取某个相邻(或当前)4x4块在帧内的绝对坐标(以4x4块为单位)以及在其所属宏块内的相对坐标(以4x4块为单位)。参数block_x和block_y是4x4块内某个像素以当前宏块(currMB)的左上角像素为原点的相对坐标(以像素为单位)，其余参数含义与上一函数相同。该函数多用于判断左邻和上邻4x4块的可用性。<strong>这里与上一个函数的区别要细细钻研！</strong></p>
-
-          
+          <p>作为基础，对其他宏块/子块的访问是编解码进行预测时所必不可少的操作，除此以外在许多别的地方也会用到，比如在对系数进行熵编码时。因此本文主要讲解源码中关于宏块访问的知识，这部分代码主要在mb_access.c中。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/09/12/宏块访问/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -512,60 +508,15 @@
 
       
         
-          
-            <p>本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。</p>
-<h1 id="编码流程"><a href="#编码流程" class="headerlink" title="编码流程"></a>编码流程</h1><p>编码流程的主要函数调用顺序以及所在文件如下：</p>
-<ol>
-<li><strong>encode_sequence(p_Enc-&gt;p_Vid, p_Enc-&gt;p_Inp)</strong>——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口</li>
-<li><strong>encode_one_frame(p_Vid, p_Inp)</strong>——lencod.c</li>
-<li><strong>read_input_data (p_Vid)</strong>——image.c，从文件读取一帧图像</li>
-<li><strong>process_image(p_Vid, p_Inp)</strong>——image.c，将读取到的图像imgData0复制一份到imgData用于编码</li>
-<li><strong>perform_encode_frame(p_Vid)</strong>——image.c，帧编码时进行调用，若是场编码则调用perform_encode_field(p_Vid)</li>
-<li><strong>frame_picture(p_Vid, p_Vid-&gt;frame_pic[0], &amp;p_Vid-&gt;imgData, 0)</strong>——image.c</li>
-<li><strong>code_a_picture(p_Vid, frame)</strong>——image.c</li>
-<li><strong>code_a_plane(p_Vid, p_Inp)</strong>——image.c，按顺序编码一帧图像的所有宏块，同时编码时区分了slice组和slice</li>
-<li><strong>encode_one_slice (p_Vid, SliceGroup, NumberOfCodedMBs)</strong>——slice.c，编码帧内的一个slice，返回编码的宏块数</li>
-<li>以下三个函数均在encode_one_slice中，是编码时最重要的三个函数：<ul>
-<li><strong>currSlice-&gt;encode_one_macroblock(currMB)</strong>——编码宏块主要的函数，在rdopt.c中根据rdopt的值该函数指针指向了不同的函数，默认为encode_one_macroblock_high，该函数进行所有帧内/帧间模式的编码，通过比较后得到率失真代价最小的一种模式，来作为该宏块真正的编码模式，同时得到所有需要编码的语法元素的值</li>
-<li><strong>end_encode_one_macroblock(currMB)</strong>——编码完一个宏块后，更新宏块参数</li>
-<li><strong>write_macroblock(currMB, 1)</strong>——将语法元素进行真正的熵编码并写入码流</li>
-</ul>
-</li>
-</ol>
-<h1 id="解码流程"><a href="#解码流程" class="headerlink" title="解码流程"></a>解码流程</h1><p>解码流程的主要函数调用顺序以及所在文件如下：</p>
-<ol>
-<li><strong>DecodeOneFrame(&amp;pDecPicList)</strong>——位于decode_test.c的main函数中，循环解码每一帧</li>
-<li><strong>decode_one_frame(pDecoder)</strong>——ldecod.c</li>
-<li><strong>read_new_slice(currSlice)</strong>——image.c，从码流文件中读取一个slice</li>
-<li><strong>decode_slice(currSlice, current_header)—</strong>—image.c</li>
-<li><strong>decode_one_slice(currSlice)</strong>——image.c</li>
-<li>以下三个函数均在decode_one_slice中，是解码时最重要的三个函数：<ul>
-<li><strong>start_macroblock(currSlice, &amp;currMB)</strong>——初始化宏块的各种参数</li>
-<li><strong>currSlice-&gt;read_one_macroblock(currMB)</strong>——从码流中读取和解析一个宏块的语法元素，根据slice类型不同可能会指向read_one_macroblock_i_slice_cavlc、read_one_macroblock_p_slice_cavlc、read_one_macroblock_b_slice_cavlc等等</li>
-<li><strong>decode_one_macroblock(currMB, currSlice-&gt;dec_picture)</strong>——将语法元素和预测结合，从而解码还原出一个宏块的像素</li>
-</ul>
-</li>
-<li><strong>WriteOneFrame()</strong>——位于decode_test.c的main函数中，将一帧图像写入YUV文件</li>
-</ol>
-<h1 id="trace文件"><a href="#trace文件" class="headerlink" title="trace文件"></a>trace文件</h1><p>当把defines.h中的# define TRACE 0改为# define TRACE 1时，就可以在运行程序时同时生成一个trace_enc.txt/trace_dec.txt文件，这两个文件输出了编解码时的许多重要信息，在某些时候对于调试非常有用。下面以trace_enc.txt为例讲解其中一些输出条目的含义。</p>
-<ul>
-<li>@88：每一行开头出现的“@+数字”代表的是编码这一行的元素前已经编码了的比特数</li>
-<li>01001101 ( 77)：每一行末尾出现的这两个数字串，括号外的是当前编码元素在码流中的二进制表示，括号内的则是十进制值</li>
-<li>Annex B NALU w/ long startcode, len 5,<br>forbidden_bit       0,<br>nal_reference_idc   3,<br>nal_unit_type       8：每一个NALU最后都会出现，包含了一个NALU的比特数长度和一些头信息，其中len是不包括startcode的长度的</li>
-<li>mb_type (I_SLICE) ( 0, 0) =   9：( 0, 0)代表宏块的坐标，9代表宏块编码模式，与代码中定义的枚举类型MBModeTypes一致，同时也是currMB-&gt;mb_type这个变量的值</li>
-<li>Intra 4x4 mode  = predicted (context: 0)/Intra 4x4 mode  =   5 (context: 7)：当亮度4x4预测模式的预测值与真实值相等时为前者，不相等时为后者</li>
-<li>mb_skip_run：以CAVLC为熵编码时出现，只出现在非skip宏块中，用以表示其前面一共有几个连续的skip宏块，一个例外是当一帧的最后一个宏块是skip宏块时，它也会包含该元素，表示包括自身在内的之前出现的连续skip宏块数。另外，该元素在解码的时候会在碰到连续宏块的第一个宏块时就被解码，用以确定接下来一共有几个连续的skip宏块，因此在trace_dec.txt文件中它出现的地方和trace_enc.txt是不一样的。</li>
-<li>8x8 mode/pdir( 0) =   4/1：P8x8模式时出现，( 0)代表这是第几个8x8块(0-3)；4/1与前面的mode/pdir对应，4(mode)即代表8x8的子分块模式，和MBModeTypes里的值是对应的，0：BSKIP_DIRECT，4：8x8，5：8x4，6：4x8，7：4x4；1(pdir)代表预测方向，0为前向，1为后向，2为双向；需要注意的是：这里的mode和pdir并不能涵盖程序中的b8x8[k].mode和b8x8[k].pdir两个变量的所有含义，因为它们会有更多的取值和组合含义，如b8x8[k].pdir=-1是表示是I宏块，没有帧间预测；b8x8[k].mode=1、2、3分别对应P16X16/16x8/8X16</li>
-<li>ref_idx_l0 = 0/ref_idx_l1 = 1：参考帧索引，l0/l1代表前/后向，对它们两个中的任意一个而言，在一个宏块中最多出现4个(4个8x8块)，因为8x8块的参考帧索引会应用到其包含的4个4x4块中。最少一个都不用出现，因为没有参考帧或者不用编码参考帧</li>
-<li>mvd_l0 (0) =   -2  (org_mv -187 pred_mv -185)<br>mvd_l0 (1) =   0  (org_mv   0 pred_mv   0)<br>mvd_l1 (0) =   0  (org_mv   0 pred_mv   0)<br>mvd_l1 (1) =   7  (org_mv   0 pred_mv  -7)：运动矢量，根据分块的模式不同会有不同的个数，由于分x方向和y方向，所以一定是偶数个，16x16有2个，16x8和8x16有4个，8x8至少有8个，具体要看8x8是否还会在分成4x8/8x4/4x4；mvd_l0是前向运动矢量，mvd_l1是后向运动矢量；(0)是x方向，(1)是y方向；几个数字的含义也很清晰，分别是mvd、真实的mv和预测mv</li>
-<li>Luma # c &amp; tr.1s(0,0) vlc=0 #c=2 #t1=1：Luma表示编码的是什么类型的DCT系数，与CAVLCBlockTypes这个枚举类型的值对应；(0,0)表示当前4x4块在一个宏块中的坐标(范围均是0-3)；vlc表示查标准中表9-5的哪一列，c是非零系数个数，t1是拖尾系数个数</li>
-<li>Luma trailing ones sign (1,0)：(1,0)是4x4块在一个宏块中的坐标</li>
-<li>Luma lev (1,0) k=4 vlc=0 lev=  2：(1,0)是4x4块在一个宏块中的坐标，k是除去拖尾系数后的第几个非零系数，逆序；vlc是suffixLength的值；lev是系数值</li>
-<li>Luma totalrun (0,1) vlc=9 totzeros=  4：(1,0)是4x4块在一个宏块中的坐标；vlc表示查表的哪一列；totzeros是总的零的个数</li>
-<li>Luma run (9,1) k=9 vlc=2 run= 0：(9,1)以及k=9中的9均表示这是第几个非零系数前的0游程，vlc表示查表9-10的哪一列；run是每一个非零系数前的零的个数</li>
-</ul>
-
-          
+          <p>本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。</p>
+<h1 id="编码流程"><a href="#编码流程" class="headerlink" title="编码流程"></a>编码流程</h1><p>编码流程的主要函数调用顺序以及所在文件如下：<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/09/11/编解码流程与trace文件使用/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -704,116 +655,15 @@
 
       
         
-          
-            <p>接下来的一系列文章将会分别讲解H.264/AVC中所用到的一些编解码技术，同时会结合源码进行分析。本文主要讲解H.264的分层编码以及相关的语法结构</p>
-<h1 id="H-264的分层编码"><a href="#H-264的分层编码" class="headerlink" title="H.264的分层编码"></a>H.264的分层编码</h1><p>　　H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。<br><img src="https://raw.githubusercontent.com/regenttsui/blogpictures/master/H.264%E5%88%86%E5%B1%82%E7%BC%96%E7%A0%81%E5%8F%8A%E8%AF%AD%E6%B3%95%E5%85%83%E7%B4%A0/level_code.png" alt="H.264分层编码"></p>
-<h1 id="H-264的语法结构"><a href="#H-264的语法结构" class="headerlink" title="H.264的语法结构"></a>H.264的语法结构</h1><h2 id="字节流NAL单元"><a href="#字节流NAL单元" class="headerlink" title="字节流NAL单元"></a>字节流NAL单元</h2><p>　　H.264编码得到文件即是一个NAL码流，其组织格式包括Annex B字节流格式以及RTP包格式，这里主要用到的是Annex B字节流格式，其基本组成单位是一个个的字节流NAL单元(byte stream NAL Unit)。字节流NAL单元主要由一些起始码+NALU+可能存在的结尾比特组成，其中NALU是主要数据所在。</p>
-<h3 id="重要语法元素"><a href="#重要语法元素" class="headerlink" title="重要语法元素"></a>重要语法元素</h3><ul>
-<li><strong>leading_zero_8bits：</strong> 可能出现在第一个NALU之前的一个值为0的前缀字节，不过据实验观察，暂时没有发现出现过该字节。</li>
-<li><strong>zero_byte：</strong> 零字节，当NALU为SPS、PPS时会出现。此外，由于一帧图像可能分为一个或多个slice，每一个slice对应一个NALU，因此在一帧图像的第一个slice的NALU中会出现。</li>
-<li><strong>start_code_prefix_one_3bytes：</strong> 固定的3个字节的NALU起始码，每个NALU必然存在，值为0x00 00 01。结合zero_byte可知，一个NALU的起始码可能为0x00 00 01或0x00 00 00 01，因此读取NALU只需读取两个起始码之间的数据即可。</li>
-<li><strong>nal_unit：</strong> 一个NALU的数据，后面详述。</li>
-<li><strong>trailing_zero_8bits：</strong> 和leading_zero_8bits相似的零字节，但是出现在结尾处，通常编码结果也没有包含该部分。</li>
-</ul>
-<h2 id="NALU"><a href="#NALU" class="headerlink" title="NALU"></a>NALU</h2><p>　　首先需要说明几个概念：数据包特串(String of Data Bit，SODB)指的是编码器编码出来的最原始的码流；原始字节序列载荷(Raw Byte Sequence Payload，RBSP)指的是通过字节对齐把SODB变为整字节的形式，并加上一些；NALU则是在RBSP的基础上再加上各种头部数据，并进行了防止RBSP出现与起始码相同的数据的防竞争操作。</p>
-<h3 id="重要语法元素-1"><a href="#重要语法元素-1" class="headerlink" title="重要语法元素"></a>重要语法元素</h3><ul>
-<li><strong>forbidden_zero_bit：</strong> 值为0的一个bit。</li>
-<li><strong>nal_ref_idc：</strong> 指示NALU优先级的2个bit，取值为0-3，值越大优先级越高，对于SPS、PPS和图像数据等的NALU该值必须大于0。</li>
-<li><strong>nal_unit_type：</strong> 指示NALU类型的5个bit，标准中有总结各种类型的NALU表格。</li>
-<li><strong>rbsp_byte:</strong> RBSP数据。</li>
-<li><strong>emulation_prevention_three_byte：</strong> 防竞争字节，值为0x03。当RBSP数据中出现连续的两个零字节(0x00 00)时，在其后插入0x03。</li>
-</ul>
-<h2 id="RBSP"><a href="#RBSP" class="headerlink" title="RBSP"></a>RBSP</h2><p>　　前面说到RBSP有多种类型，如SPS、PPS和Slice，因此会有不同的语法结构，但是它们尾部都有一个共同的语法结构：rbsp_trailing_bits。该元素即SODB和RBSP的唯一区别所在，其包括：</p>
-<ul>
-<li><strong>rbsp_stop_one_bit：</strong> 值为1的1个bit。</li>
-<li><strong>rbsp_alignment_zero_bit：</strong> 用作字节对齐的值为的0若干bit。</li>
-</ul>
-<h3 id="序列参数集-Sequence-Paramater-Set，SPS"><a href="#序列参数集-Sequence-Paramater-Set，SPS" class="headerlink" title="序列参数集(Sequence Paramater Set，SPS)"></a>序列参数集(Sequence Paramater Set，SPS)</h3><p>　　包含编码序列的一些参数。</p>
-<h4 id="重要语法元素-2"><a href="#重要语法元素-2" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
-<li><strong>profile_idc、level_idc：</strong> 指明编码所用的profile和level，这两者主要是对编码支持的特性和能力做出的约束规定，具体可查看标准。</li>
-<li><strong>seq_parameter_set_id：</strong> 指明该SPS的ID，该ID由PPS引用。</li>
-<li><strong>max_num_ref_frames：</strong> 指明参考帧队列可以包含的帧数的最大值，该元素的值最大为16。</li>
-<li><strong>pic_width_in_mbs_minus1、pic_height_in_map_units_minus1：</strong> 以宏块为单位的图像宽度和高度分别减1。</li>
-<li><strong>frame_cropping_flag：</strong> 指明是否需要对图像进行裁剪。</li>
-<li><strong>frame_crop_left_offset、frame_crop_right_offset、frame_crop_top_offset、frame_crop_bottom_offset：</strong> 若要裁剪，则指明左右上下裁剪的宽度。</li>
-</ul>
-<h3 id="图像参数集-Picture-Paramater-Set，PPS"><a href="#图像参数集-Picture-Paramater-Set，PPS" class="headerlink" title="图像参数集(Picture Paramater Set，PPS)"></a>图像参数集(Picture Paramater Set，PPS)</h3><p>　　包含编码图像的一些参数。</p>
-<h4 id="重要语法元素-3"><a href="#重要语法元素-3" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
-<li><strong>pic_parameter_set_id：</strong> 指明该PPS的ID，该ID由Slice的RBSP引用。</li>
-<li><strong>seq_parameter_set_id：</strong> 所引用的SPS的ID。</li>
-<li><strong>entropy_coding_mode_flag：</strong> 熵编码标志，为0时表明采用CAVLC编码，为1时采用CABAC编码。</li>
-<li><strong>num_slice_groups_minus1：</strong> slice组的个数减1，同时可用于表明是否采用slice组模式，当值为0时实际上表明不采用slice组模式，因为只有一个slice组。</li>
-<li><strong>num_ref_idx_l0_default_active_minus1、num_ref_idx_l1_default_active_minus1：</strong> 分别指明前向和后向参考帧队列当前实际包含的帧数。与max_num_ref_frames的区别在于max_num_ref_frames指明了最大值，用于分配内存；而此处的两个元素是程序运行时动态更新的实际值。</li>
-<li><strong>weighted_pred_flag：</strong> 指明P、SP slice是否进行加权预测。</li>
-<li><strong>weighted_bipred_idc：</strong> 指明B slice是否进行加权预测。</li>
-<li><strong>pic_init_qp_minus26：</strong> 亮度分量的初始化QP值减26。H.264中最终的QP通过三个值计算得出，分别在PPS、slice头和宏块中给出相应值，此处是一个初始值。</li>
-<li><strong>deblocking_filter_control_present_flag：</strong> 值为1时表示显式传递控制滤波强度的参数；为0时使用默认强度。</li>
-<li><strong>constrained_intra_pred_flag：</strong> 为0时允许帧内编码的宏块使用帧间编码的宏块进行预测；为1时禁止。</li>
-<li><strong>transform_8x8_mode_flag：</strong> 为1时表示使用8$\times$8变换代替4$\times$4变换。</li>
-</ul>
-<h3 id="没有分割的Slice-slice-layer-without-partitioning-rbsp"><a href="#没有分割的Slice-slice-layer-without-partitioning-rbsp" class="headerlink" title="没有分割的Slice(slice_layer_without_partitioning_rbsp)"></a>没有分割的Slice(slice_layer_without_partitioning_rbsp)</h3><p>　　本文主要针对该种slice形式的RBSP。slice包含了视频编码的数据，主要包括了slice_header、slice_data和rbsp_slice_trailing_bits三个部分，其中结尾元素上文已经介绍，因此主要介绍前两者。</p>
-<h3 id="slice-header"><a href="#slice-header" class="headerlink" title="slice_header"></a>slice_header</h3><p>　　slice_header是头部信息，包含了该slice的相关参数。</p>
-<h4 id="重要语法元素-4"><a href="#重要语法元素-4" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
-<li><strong>first_mb_in_slice</strong> 指明该slice中第一个宏块的位置。</li>
-<li><strong>slice_type：</strong> 指明slice的类型，例如2代表I slice，0代表P slice，1代表B slice。</li>
-<li><strong>pic_parameter_set_id：</strong> 所引用的PPS的ID，以上文对应。</li>
-<li><strong>idr_pic_id ：</strong> IDR帧才有的ID标识。</li>
-<li><strong>direct_spatial_mv_pred_flag：</strong> 当B帧使用Direct模式进行预测时，指明使用空域预测方式还是时域预测方式。1：空域；0：时域。</li>
-<li><strong>num_ref_idx_active_override_flag：</strong> 指明是否重载当前帧的参考帧队列长度，若是，则会出现新的num_ref_idx_l0_default_active_minus1、num_ref_idx_l1_default_active_minus1进行指定。</li>
-<li><strong>slice_qp_delta：</strong> 上面提到的，这是slice头中指明的QP偏移。</li>
-<li><strong>disable_deblocking_filter_idc：</strong> 又一个控制滤波的参数。</li>
-</ul>
-<h3 id="slice-data"><a href="#slice-data" class="headerlink" title="slice_data"></a>slice_data</h3><p>　　slice_data是slice的主体部分，包含了真正的视频编码数据。</p>
-<h4 id="重要语法元素-5"><a href="#重要语法元素-5" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
-<li><strong>cabac_alignment_one_bit</strong> 采用CABAC时，要求slice头的数据要先对齐，因此会先出现若干bit的1来进行字节对齐。</li>
-<li><strong>mb_skip_run：</strong> 采用CAVLC时方存在，携带该元素的P/B宏块指明该宏块之前一共有几个连续的P_Skip/B_Skip宏块，skip宏块不包括任何编码数据，仅仅利用预测信息进行重构。</li>
-<li><strong>mb_skip_flag：</strong> 采用CABAC时方存在，每个skip宏块均包含该元素表明自身是skip宏块。</li>
-<li><strong>macroblock_layer ：</strong> 宏块层，包括所有宏块的数据。(重要)</li>
-<li><strong>end_of_slice_flag：</strong> 为0时表明该slice仍有宏块未编码；为1时表示已到达slice结尾。</li>
-</ul>
-<h3 id="macroblock-layer"><a href="#macroblock-layer" class="headerlink" title="macroblock_layer"></a>macroblock_layer</h3><p>　　macroblock_layer是最重要的宏块编码数据所在。</p>
-<h4 id="重要语法元素-6"><a href="#重要语法元素-6" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
-<li><strong>mb_type：</strong> 宏块类型，种类较多，不仅指明是I/P/B宏块，还指明了其宏块分割方式和预测模式。</li>
-<li><strong>pcm_alignment_zero_bit：</strong> 当宏块类型为I_PCM时出现，其要求先用0进行字节对齐。I_PCM是一种特殊的宏块，它不经过变换量化等步骤，而是直接传输像素值，属于比较少见的类型。</li>
-<li><strong>pcm_sample_luma、pcm_sample_chroma：</strong> I_PCM宏块中包含亮度和色度像素值的数组变量。</li>
-<li><strong>sub_mb_pred：</strong> 子宏块(8$\times$8大小)预测的语法结构，即一个宏块内的4个8$\times$8子宏块内部会分别进行预测。(重要)</li>
-<li><strong>transform_size_8x8_flag ：</strong> 满足一定条件时会出现该元素表明是否采用8x8变换，若不存在该元素，默认不采用。</li>
-<li><strong>mb_pred：</strong> 宏块预测的语法结构，宏块预测与子宏块预测只会存在一个。(重要)</li>
-<li><strong>coded_block_pattern：</strong> 非Intra_16$\times$16模式时存在，用于指明8$\times$8块是否含有非零系数。共有6位，前两位分别代表UV分量的两个8$\times$8块，后四位从低到高代表Y分量的四个8$\times$8块(按扫描顺序)。值为0代表无非零系数，1代表至少有一个非零系数。Intra_16$\times$16模式时coded_block_pattern隐含在mb_type中。该元素的主要作用时提高解码效率。</li>
-<li><strong>mb_qp_delta：</strong> 如前所述，宏块层指明的QP偏移，范围是[-26, +25]此时每一个slice第一个宏块的计算公式为：</li>
-</ul>
-<p>$$QP_0 = pic\_init\_qp\_minus26 + 26 + slice\_qp\_delta + mb\_qp\_delta$$<br>而后续宏块QP的计算公式为：<br>$$QP_n = (QP_{n-1} + mb\_qp\_delta + 52)\ \%\ 52$$<br>注意n-1是从编码顺序角度而言的。</p>
-<ul>
-<li><strong>residual：</strong> 残差编码数据。(重要)</li>
-</ul>
-<h3 id="mb-pred"><a href="#mb-pred" class="headerlink" title="mb_pred"></a>mb_pred</h3><h4 id="重要语法元素-7"><a href="#重要语法元素-7" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
-<li><strong>prev_intra4x4_pred_mode_flag，rem_intra4x4_pred_mode：：</strong> intra_4$\times$4预测时，用于指示预测的预测模式(有点拗口)是否等于真正的预测模式。1代表相等；0代表不相等，此时需要额外用rem_intra4x4_pred_mode指定真实模式。该种做法的目的在于两者相等时可以减少编码数据量。</li>
-<li><strong>intra_chroma_pred_mode：</strong> 当采用帧内预测时存在该元素，用于指明色度分量的预测模式。</li>
-<li><strong>ref_idx_l0、ref_idx_l1：</strong> 前、后向参考帧队列，通过其中的索引号mbPartIdx可以找到参考帧。</li>
-<li><strong>mvd_l0、mvd_l1：</strong> 前、后向运动矢量差值，包括水平和垂直两个分量。其中compIdx=0为水平方向的值，compIdx=1位垂直方向的值。</li>
-</ul>
-<h3 id="sub-mb-pred"><a href="#sub-mb-pred" class="headerlink" title="sub_mb_pred"></a>sub_mb_pred</h3><h4 id="重要语法元素-8"><a href="#重要语法元素-8" class="headerlink" title="重要语法元素"></a>重要语法元素</h4><ul>
-<li><strong>sub_mb_type：</strong> 子宏块类型。</li>
-<li><strong>ref_idx_l0、ref_idx_l1：</strong> 同mb_pred。</li>
-<li><strong>mvd_l0、mvd_l1：</strong> 同mb_pred。</li>
-</ul>
-<h3 id="residual"><a href="#residual" class="headerlink" title="residual"></a>residual</h3><p>　　该过程首先会查看熵编码方式，根据熵编码的不同处理有所不同。然后查看是否是Intra_16x16模式，若是则首先将16个DC系数取出单独进行编码，然后再分别对每个4$\times$4块剩下的AC系数进行编码；若不是则对每个4$\times$4块的16个系数进行编码。Y分量编码结束再一次编码U、V分量。</p>
-<h1 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h1><p>　　在H.264/AVC的官方参考程序JM中，存在着编码和解码所需的配置文件，这些文件以.cfg为后缀（当然也可以直接在命令行中设置参数而不使用配置文件）。上述许多语法元素的值实际上就是在配置文件中指定的，而在源码中主要由config_common.h、configfile.h和configfile.c对配置文件中的各种参数进行读取和解析。下面以JM 19.0为例进行源码分析。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  <span class="keyword">char</span> *TokenName;    <span class="comment">//!&lt; name</span></span><br><span class="line">  <span class="keyword">void</span> *Place;        <span class="comment">//!&lt; address</span></span><br><span class="line">  <span class="keyword">int</span> Type;           <span class="comment">//!&lt; type:  0-int, 1-char[], 2-double</span></span><br><span class="line">  <span class="keyword">double</span> Default;     <span class="comment">//!&lt; default value</span></span><br><span class="line">  <span class="keyword">int</span> param_limits;   <span class="comment">//!&lt; 0: no limits, 1: both min and max, 2: only min (i.e. no negatives), 3: special case for QPs since min needs bitdepth_qp_scale</span></span><br><span class="line">  <span class="keyword">double</span> min_limit;</span><br><span class="line">  <span class="keyword">double</span> max_limit;</span><br><span class="line">  <span class="keyword">int</span>    char_size;   <span class="comment">//!&lt; Dimension of type char[]</span></span><br><span class="line">&#125; Mapping;</span><br></pre></td></tr></table></figure>
-<p>　　Mapping这个结构体是整个参数解析的基础，其主要作用是将配置文件中的一个参数映射到程序的输入参数中的一个变量，其中输出参数是一个InputParameters类型的结构体，包含了所有的输入参数。Mapping Map[]这个数组则保存了所有参数的映射关系，此处以数组中的第一个元素为例解释Mapping中重要变量的含义：</p>
-<p>{“ProfileIDC”, &amp;cfgparams.ProfileIDC, 0, (double) PROFILE_IDC, 0, 0.0, 0.0,}</p>
-<ul>
-<li><strong>TokenName：</strong> 配置文件中的参数名，如ProfileIDC</li>
-<li><strong>Place：</strong> 程序中的参数变量，此处是其地址，如&amp;cfgparams.ProfileIDC，cfgparams即是InputParameters结构体，ProfileIDC是其中一个变量</li>
-<li><strong>Type：</strong> 参数变量的数据类型</li>
-<li><strong>Default：</strong> 参数变量的默认值，如用PROFILE_IDC这个宏作为默认值</li>
-<li><strong>param_limits：</strong> 参数变量值的限制，英文注释中清晰地列出了4种相关限制，0为无限制</li>
-<li><strong>min_limit/max_limit：</strong> 与上一个变量对应，表明了所能取的最小/大值，无限制时这两个值均为0</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Configure</span> <span class="params">(VideoParameters *p_Vid, InputParameters *p_Inp, <span class="keyword">int</span> ac, <span class="keyword">char</span> *av[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> *content = <span class="literal">NULL</span>;</span><br><span class="line">  <span class="keyword">int</span> CLcount, ContentLen, NumberParams;</span><br><span class="line">  <span class="keyword">char</span> *filename=DEFAULTCONFIGFILENAME;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//中间省略若干代码</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">memset</span> (&amp;cfgparams, <span class="number">0</span>, <span class="keyword">sizeof</span> (InputParameters));</span><br><span class="line">  <span class="comment">//Set default parameters.</span></span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"Setting Default Parameters...\n"</span>);</span><br><span class="line">  <span class="comment">//设置参数的默认值</span></span><br><span class="line">  InitParams(Map); </span><br><span class="line"></span><br><span class="line">  <span class="comment">// Process default config file</span></span><br><span class="line">  CLcount = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (ac&gt;=<span class="number">3</span>)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == <span class="built_in">strncmp</span> (av[<span class="number">1</span>], <span class="string">"-d"</span>, <span class="number">2</span>))</span><br><span class="line">    &#123;</span><br><span class="line">      filename=av[<span class="number">2</span>];</span><br><span class="line">      CLcount = <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == <span class="built_in">strncmp</span> (av[<span class="number">1</span>], <span class="string">"-h"</span>, <span class="number">2</span>))</span><br><span class="line">    &#123;</span><br><span class="line">      JMHelpExit();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"Parsing Configfile %s"</span>, filename);</span><br><span class="line">  <span class="comment">//读取配置文件到一个buffer中并返回</span></span><br><span class="line">  content = GetConfigFileContent (filename);</span><br><span class="line">  <span class="keyword">if</span> (<span class="literal">NULL</span>==content)</span><br><span class="line">    error (errortext, <span class="number">300</span>);</span><br><span class="line">  <span class="comment">//解析配置文件参数并映射到输入参数变量中</span></span><br><span class="line">  ParseContent (p_Inp, Map, content, (<span class="keyword">int</span>) <span class="built_in">strlen</span>(content));</span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"\n"</span>);</span><br><span class="line">  <span class="built_in">free</span> (content);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Parse the command line</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (CLcount &lt; ac)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//省略若干代码</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>　　Configure函数是解析参数的主要函数，传入的参数包括：视频参数p_Vid, 输入参数p_Inp, 命令行参数个数ac, 命令行参数av。主要调用InitParams、GetConfigFileContent、ParseContent三个函数实现整个参数解析过程。</p>
-
-          
+          <p>接下来的一系列文章将会分别讲解H.264/AVC中所用到的一些编解码技术，同时会结合源码进行分析。本文主要讲解H.264的分层编码以及相关的语法结构</p>
+<h1 id="H-264的分层编码"><a href="#H-264的分层编码" class="headerlink" title="H.264的分层编码"></a>H.264的分层编码</h1><p>　　H.264标准实现将压缩编码和网络传输分离，设计了分层结构，主要包括网络抽象层(Network Abstraction Layer，NAL)和视频编码层(Video Coding Layer,VCL)。其中VCL是真正进行视频编解码的层次，它又可进一步层层细分为条带层、宏块层等等；而NAL是在VCL基础上进行一层封装，以方便传输和储存。相关的结构如图所示。<br><img src="https://raw.githubusercontent.com/regenttsui/blogpictures/master/H.264%E5%88%86%E5%B1%82%E7%BC%96%E7%A0%81%E5%8F%8A%E8%AF%AD%E6%B3%95%E5%85%83%E7%B4%A0/level_code.png" alt="H.264分层编码"><br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/08/09/H-264分层编码与语法结构/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -952,37 +802,15 @@
 
       
         
-          
-            <p>　　由于研究生入了视频安全这个坑，目前主要研究的是H.264/AVC标准，因此决定对自学H.264过程中的知识进行总结并写入博客记录。当然由于水平有限，有些地方理解可能有误，所以敬请读者指出(如果有人看的话哈哈)。本文作为第一篇博客，主要对H.264/AVC相关的基本概念进行介绍。</p>
-<h1 id="H-264-AVC简介"><a href="#H-264-AVC简介" class="headerlink" title="H.264/AVC简介"></a>H.264/AVC简介</h1><p>　　H.264是2003年3月正式发布的视频编码标准，又称为先进视频编码(Advanced Video Coding, AVC)，旨在在拥有更高的压缩率的情况下依然能够提供良好视频质量，现已在数字电视广播、实时视频通信、网络流媒体等领域中广泛应用。<br>　　视频编码的最主要目的是数据压缩。例如，图像的每个像素的RGB三个分量各需要一个字节表示，那么每一个像素至少需要3字节，分辨率1280×720的图像的大小为2.76MB，如果帧率为25帧/秒，那么视频的码率将达到69.12MB/s，现有的存储空间和传输带宽难以满足这样的需求，因此原始视频必须进行编码压缩。而视频信息之所以可以被压缩，是因为其本身存在大量的数据冗余。其主要类型有：</p>
-<ol>
-<li><strong>时间冗余</strong>：视频相邻的两帧之间内容相似，存在运动关系(帧间预测编码)。</li>
-<li><strong>空间冗余</strong>：视频的某一帧内部的相邻像素存在相似性(帧内预测编码)。</li>
-<li><strong>编码冗余</strong>：视频中不同数据出现的概率不同(熵编码)。</li>
-<li><strong>视觉冗余</strong>：观众的视觉系统对视频中不同的部分敏感度不同(变换编码)。</li>
-</ol>
-<p>　　针对这些不同类型的冗余信息，在各种视频编码的标准算法中都有不同的技术专门应对，以通过不同的角度提高压缩的比率。</p>
-<h1 id="H-264-AVC基本概念"><a href="#H-264-AVC基本概念" class="headerlink" title="H.264/AVC基本概念"></a>H.264/AVC基本概念</h1><p>　　H.264是按照层次组织数据的，其层次结构大致如图所示。<br><img src="https://raw.githubusercontent.com/regenttsui/blogpictures/master/H-264-AVC%E7%AE%80%E4%BB%8B%E5%8F%8A%E7%9B%B8%E5%85%B3%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/H.264_level.png" alt="H.264层级组织"></p>
-<ul>
-<li><strong>宏块(macroblock)：</strong>一帧图像通常划分成若干宏块，一个宏块由一个亮度像素块和附加的两个色度像素块组成。H.264中，亮度块为16x16大小的像素块，而两个色度图像像素块的大小依据其图像的采样格式而定，如：对于YUV420采样图像，色度块为8x8大小的像素块。视频编码算法以宏块为单位，逐个宏块进行编码，组织成连续的视频码流。宏块可以进一步进行16x8/8x16/8x8的分割，其中8x8子宏块又可以进一步进行8x4/4x8/4x4的分割。</li>
-<li><strong>片/条带(slice)：</strong>每帧的数据可以分为若干个片，包括I/P/B三种片，一般每个片中包含一个或者几个宏块，I slice只含I宏块，P slice可以包含I/P宏块，B slice可以包含I/B宏块。对视频流进行分片处理，既可以方便通信传输，也可以提高视频流的容错能力，因为H.264规定，帧内编码块只能在同一个片中进行帧内预测，这样如果由于传输错误使一个片中的数据丢失，所能影响到的只是同一片中的宏块解码，不会影响到同一帧图像中其他片中的宏块解码。</li>
-<li><strong>帧(frame)和场(field)：</strong>帧代表一幅静止的图像，一帧包括两个场，即顶场和底场，顶场是奇数行的数据，底场是偶数行的数据。H.264中主要包括三种类型的帧，即I帧、P帧和B帧。通常I帧的压缩率较低，作为后续帧的重要参考帧，而P帧和B帧由于使用了帧间预测使得压缩率较高，因此视频的压缩率主要取决于P帧和B帧。</li>
-</ul>
-<ol>
-<li><strong>I帧：</strong>主要包含I宏块，其只依靠自身的数据进行帧内预测编码，不依赖于其他帧的数据。有一种特殊的I帧叫IDR(Instantaneous Decoding Refresh 即时解码刷新)帧，作用是立刻刷新，在IDR帧之后的所有帧都不能引用在IDR帧之前的帧，从而减少错误传播。由此可知，我们视频播放时常见的在“任意点”播放实际上就是定位到附近的IDR帧进行播放的，而非严格意义上的任意播放。</li>
-<li><strong>P帧：</strong>主要包含I宏块和P宏块，P宏块需要利用在它前面的P帧或者I帧进行帧间预测编码，I宏块与I帧中的相似。 </li>
-<li><strong>B帧：</strong>主要包含I宏块和B宏块，B宏块数据需要利用在它前面和后面的I帧或P帧进行帧间预测编码。由于B帧的编解码打乱了视频图像的自然顺序，因此不用做参考帧。</li>
-</ol>
-<ul>
-<li><strong>GOP(Group of Picture图像组)：</strong>一个视频序列包含若干个GOP，一个GOP包含若干幅图像，图像可以是I/P/B帧中的任意类型。其中一个GOP的第一帧必定是I帧。</li>
-<li><strong>帧内预测：</strong>编码时，利用同一帧内的其他像素的数据对当前像素数据进行预测，然后用当前像素的真实值减去预测值得到残差，供后续编码使用。残差相对于原始数据通常小很多，可以减少编码的数据量。 </li>
-<li><strong>帧间预测：</strong>帧间预测有两个重要概念：运动估计和运动补偿。运动估计是寻找当前编码块在已编码编码图像(称为参考帧)中的最佳对应块，并计算出两者的偏移(即运动矢量)。运动补偿就是根据运动矢量和帧间预测方法，求得当前块的估计值的过程。它旨在说明当前图像的每一个像素如何由其参考图像得到的。同样的，帧间预测编码的也是残差数据。</li>
-<li><strong>变换编码：</strong>对信号进行某种函数变换，使其从一种空间转换到另一空间，然后利用信号在另一空间的特性进行压缩。例如把视频信号从空域转换到频域，使得图像的低频系数集中于左上角，频率向右下角递增。H.264中主要用到离散余弦变换(DCT)和哈达玛(Hadamard)变换，其中DCT变换使用的是整数DCT变换。</li>
-<li><strong>量化：</strong>量化即令每个输出除以一个数(量化步长)然后取整，得到较小的量化输出，从而减少编码的数据量，属于有损压缩。  </li>
-<li><strong>熵编码：</strong>根据统计特性设计的无损编码算法，能够十分有效地对数据进行压缩，H.264中主要使用了指数哥伦布编码(Exp-Golomb Code)、上下文自适应的变长编码(CAVLC)和上下文自适应的二进制算术编码(CABAC)。</li>
-</ul>
-
-          
+          <p>　　由于研究生入了视频安全这个坑，目前主要研究的是H.264/AVC标准，因此决定对自学H.264过程中的知识进行总结并写入博客记录。当然由于水平有限，有些地方理解可能有误，所以敬请读者指出(如果有人看的话哈哈)。本文作为第一篇博客，主要对H.264/AVC相关的基本概念进行介绍。</p>
+<h1 id="H-264-AVC简介"><a href="#H-264-AVC简介" class="headerlink" title="H.264/AVC简介"></a>H.264/AVC简介</h1><p>　　H.264是2003年3月正式发布的视频编码标准，又称为先进视频编码(Advanced Video Coding, AVC)，旨在在拥有更高的压缩率的情况下依然能够提供良好视频质量，现已在数字电视广播、实时视频通信、网络流媒体等领域中广泛应用。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/07/26/H-264-AVC简介及相关基本概念/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>

@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)——lencod.c re">
+<meta name="description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：">
 <meta name="keywords" content="H.264,Video,JM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（二）——编解码流程与trace文件使用">
 <meta property="og:url" content="http://yoursite.com/2018/09/11/编解码流程与trace文件使用/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
-<meta property="og:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)——lencod.c re">
+<meta property="og:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-12T11:02:43.724Z">
+<meta property="og:updated_time" content="2018-09-12T11:11:51.052Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（二）——编解码流程与trace文件使用">
-<meta name="twitter:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：  encode_sequence(p_Enc-&amp;gt;p_Vid, p_Enc-&amp;gt;p_Inp)——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口 encode_one_frame(p_Vid, p_Inp)——lencod.c re">
+<meta name="twitter:description" content="本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。 编码流程编码流程的主要函数调用顺序以及所在文件如下：">
 
 
 
@@ -369,7 +369,7 @@
 
       
         <p>本文主要讲解JM 19.0中整个编解码的流程以及其用于调试的trace文件的使用。</p>
-<h1 id="编码流程"><a href="#编码流程" class="headerlink" title="编码流程"></a>编码流程</h1><p>编码流程的主要函数调用顺序以及所在文件如下：</p>
+<h1 id="编码流程"><a href="#编码流程" class="headerlink" title="编码流程"></a>编码流程</h1><p>编码流程的主要函数调用顺序以及所在文件如下：<br><a id="more"></a></p>
 <ol>
 <li><strong>encode_sequence(p_Enc-&gt;p_Vid, p_Enc-&gt;p_Inp)</strong>——位于lencod.c的main函数中，顾名思义是编码一个视频序列的入口</li>
 <li><strong>encode_one_frame(p_Vid, p_Inp)</strong>——lencod.c</li>
