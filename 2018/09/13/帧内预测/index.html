@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="H.264,Video,JM," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="帧内预测是视频编码中非常重要的一环，H.264的帧内预测包括亮度预测和色度预测，其中亮度预测有四种类型：Intra_4x4，Intra_8x8，Intra_16x16和I_PCM。这里主要讲解Intra_4x4和Intra_16x16。需要注意的是用于帧内预测的相邻像素必须是在做去块滤波之前。同时，所有预测函数的调用实际上都是在模式决策这一环进行的，模式决策是个比较复杂且耗时的过程，有机会再仔细研">
+<meta name="keywords" content="H.264,Video,JM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（三）——帧内预测">
+<meta property="og:url" content="http://yoursite.com/2018/09/13/帧内预测/index.html">
+<meta property="og:site_name" content="Regent&#39;s Blog">
+<meta property="og:description" content="帧内预测是视频编码中非常重要的一环，H.264的帧内预测包括亮度预测和色度预测，其中亮度预测有四种类型：Intra_4x4，Intra_8x8，Intra_16x16和I_PCM。这里主要讲解Intra_4x4和Intra_16x16。需要注意的是用于帧内预测的相邻像素必须是在做去块滤波之前。同时，所有预测函数的调用实际上都是在模式决策这一环进行的，模式决策是个比较复杂且耗时的过程，有机会再仔细研">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-09-13T10:57:45.363Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（三）——帧内预测">
+<meta name="twitter:description" content="帧内预测是视频编码中非常重要的一环，H.264的帧内预测包括亮度预测和色度预测，其中亮度预测有四种类型：Intra_4x4，Intra_8x8，Intra_16x16和I_PCM。这里主要讲解Intra_4x4和Intra_16x16。需要注意的是用于帧内预测的相邻像素必须是在做去块滤波之前。同时，所有预测函数的调用实际上都是在模式决策这一环进行的，模式决策是个比较复杂且耗时的过程，有机会再仔细研">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/13/帧内预测/"/>
+
+
+
+
+
+  <title>H.264/AVC编解码技术及JM源码分析（三）——帧内预测 | Regent's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/regenttsui"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Regent's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">萌新的杂货店</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/13/帧内预测/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Regent Tsui">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/25165069?s=400&u=03ba742cd35d3f1bde28035a736fae28e6178c3e&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Regent's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">H.264/AVC编解码技术及JM源码分析（三）——帧内预测</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-13T18:55:40+08:00">
+                2018-09-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/视频技术/" itemprop="url" rel="index">
+                    <span itemprop="name">视频技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>帧内预测是视频编码中非常重要的一环，H.264的帧内预测包括亮度预测和色度预测，其中亮度预测有四种类型：Intra_4x4，Intra_8x8，Intra_16x16和I_PCM。这里主要讲解Intra_4x4和Intra_16x16。需要注意的是用于帧内预测的相邻像素必须是在做去块滤波之前。同时，所有预测函数的调用实际上都是在模式决策这一环进行的，模式决策是个比较复杂且耗时的过程，有机会再仔细研究。<br><a id="more"></a></p>
+<h1 id="Intra-4x4"><a href="#Intra-4x4" class="headerlink" title="Intra_4x4"></a>Intra_4x4</h1><p>下图是Intra_4x4预测是示意图，其中小写字母a-p是当前要进行帧内预测的4x4块，而大写字母则是预测时需要用到的13个相邻像素，且它们均是编码后重新解码得到的像素值(即并非是原始像素值)。这些像素的可用性由上一篇文章说到的get4x4Neighbour()函数得到，额外需要注意的几点是：</p>
+<ol>
+<li>如果相邻4x4块当前还未编码则不可用(按照标准的编码顺序会出现这种情况)。</li>
+<li>当UseConstrainedIntraPred的值为真时帧间编码的像素也不能用于进行帧内预测。</li>
+<li>若E-H像素不可用，可以使用D的值代替这几个像素的值。</li>
+</ol>
+<ul>
+<li>X A B C D E F G H<br>  ————————<br>I |a b c d<br>J |e f g h<br>K |i j k l<br>L |m n o p<br>Intra_4x4共有9种预测模式，以0-8表示，分别对应了不同的方向，如图所示。这些预测模式所利用到的相邻像素有所不同，若需要的相邻像素不可用，则表明该预测模式不可用，这种情况在第一行/列宏块中尤为严重，需要注意。这些预测模式的对像素值的计算方法均是一种线性关系，具体公式可以参考标准，此处不做赘述。编码时会从可用的模式中选取最佳的预测模式，编码最佳预测模式Mode的方法如下：</li>
+</ul>
+<ol>
+<li>先根据标准中的方法从左邻块和上邻块的帧内预测模式估计出一个最可能的预测模式MPM</li>
+<li>若MPM=Mode，则直接编码一个1作为标志位即可</li>
+<li>若MPM!=Mode，则先编码一个0作为标志位，然后编码固定的三位来表示最佳预测模式</li>
+<li>固定三位的编码方法是：若MPM&gt;Mode，则编码结果为Mode所代表的序号的二进制表示(由前提条件知道其值最大不超过8，故三位即可表示)；若MPM&lt;Mode，则编码结果为Mode-1所代表的序号的二进制表示(由前提条件知道其值最大可能为9-1=8，最小为1-1=0，仍然可以用三位表示)</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mode_decision_for_I4x4_blocks_JM_High</span> <span class="params">(Macroblock *currMB, <span class="keyword">int</span>  b8,  <span class="keyword">int</span>  b4,  <span class="keyword">int</span>  lambda,  distblk*  min_cost)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//省略一大段变量的定义与赋值</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">//获取左邻块和上邻块的信息</span></span><br><span class="line">  get4x4Neighbour(currMB, block_x - <span class="number">1</span>, block_y    , mb_size, &amp;left_block);</span><br><span class="line">  get4x4Neighbour(currMB, block_x,     block_y - <span class="number">1</span>, mb_size, &amp;top_block );</span><br><span class="line"></span><br><span class="line">  <span class="comment">// constrained intra pred 判断是否限制帧间像素的可用性</span></span><br><span class="line">  <span class="keyword">if</span> (p_Inp-&gt;UseConstrainedIntraPred)</span><br><span class="line">  &#123;</span><br><span class="line">    left_block.available = left_block.available ? p_Vid-&gt;intra_block[left_block.mb_addr] : <span class="number">0</span>;</span><br><span class="line">    top_block.available  = top_block.available  ? p_Vid-&gt;intra_block[top_block.mb_addr]  : <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//获取左邻块和上邻块的帧内预测模式</span></span><br><span class="line">  upMode            =  top_block.available ? p_Vid-&gt;ipredmode[top_block.pos_y ][top_block.pos_x ] : (<span class="keyword">char</span>) <span class="number">-1</span>;</span><br><span class="line">  leftMode          = left_block.available ? p_Vid-&gt;ipredmode[left_block.pos_y][left_block.pos_x] : (<span class="keyword">char</span>) <span class="number">-1</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//计算最可能的预测模式：若两者均不可用只能是DC模式，否则选择值小的预测模式</span></span><br><span class="line">  mostProbableMode  = (upMode &lt; <span class="number">0</span> || leftMode &lt; <span class="number">0</span>) ? DC_PRED : upMode &lt; leftMode ? upMode : leftMode;</span><br><span class="line">  *min_cost = DISTBLK_MAX;</span><br><span class="line"></span><br><span class="line">  currMB-&gt;ipmode_DPCM = NO_INTRA_PMODE; <span class="comment">////For residual DPCM</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">//===== INTRA PREDICTION FOR 4x4 BLOCK =====</span></span><br><span class="line">  <span class="comment">// set intra prediction values for 4x4 intra prediction 计算13个像素的可用性并进行赋值</span></span><br><span class="line">  currSlice-&gt;set_intrapred_4x4(currMB, PLANE_Y, pic_pix_x, pic_pix_y, &amp;left_available, &amp;up_available, &amp;all_available);  </span><br><span class="line"></span><br><span class="line">  <span class="comment">//===== LOOP OVER ALL 4x4 INTRA PREDICTION MODES ===== 在9种模式中进行循环</span></span><br><span class="line">  <span class="keyword">for</span> (ipmode = <span class="number">0</span>; ipmode &lt; NO_INTRA_PMODE; ipmode++)</span><br><span class="line">  &#123;</span><br><span class="line">    available_mode =  (all_available) || (ipmode==DC_PRED) ||</span><br><span class="line">      (up_available &amp;&amp; (ipmode==VERT_PRED||ipmode==VERT_LEFT_PRED||ipmode==DIAG_DOWN_LEFT_PRED)) ||</span><br><span class="line">      (left_available &amp;&amp; (ipmode==HOR_PRED||ipmode==HOR_UP_PRED));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (valid_intra_mode(currSlice, ipmode) == <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//如果当前模式可用</span></span><br><span class="line">    <span class="keyword">if</span>( available_mode)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">// generate intra 4x4 prediction block given availability 用当前模式进行预测</span></span><br><span class="line">      get_intrapred_4x4(currMB, PLANE_Y, ipmode, block_x, block_y, left_available, up_available);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// get prediction and prediction error 计算预测值和真实值的预测误差，得到像素的差分值</span></span><br><span class="line">      generate_pred_error_4x4(&amp;p_Vid-&gt;pCurImg[pic_opix_y], currSlice-&gt;mpr_4x4[<span class="number">0</span>][ipmode], &amp;currSlice-&gt;mb_pred[<span class="number">0</span>][block_y], &amp;currSlice-&gt;mb_ores[<span class="number">0</span>][block_y], pic_opix_x, block_x);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// get and check rate-distortion cost 计算率失真</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> BEST_NZ_COEFF</span></span><br><span class="line">      currMB-&gt;cbp_bits[<span class="number">0</span>] = cbp_bits;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">      <span class="comment">//调用rdcost_for_4x4_intra_blocks()计算率失真，此函数会进行变换、量化、反量化、反变换、重构、熵编码等操作，计算得到率失真的值</span></span><br><span class="line">      rdcost = currSlice-&gt;rdcost_for_4x4_intra_blocks (currMB, &amp;c_nz, b8, b4, ipmode, lambda, mostProbableMode, min_rdcost);</span><br><span class="line">      <span class="comment">//如果小于最小的率失真值，则将相关的编码信息保存下来</span></span><br><span class="line">      <span class="keyword">if</span> ((rdcost &lt; min_rdcost) || (rdcost == min_rdcost &amp;&amp; ipmode == mostProbableMode))</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="comment">//--- set coefficients ---</span></span><br><span class="line">        <span class="built_in">memcpy</span>(p_RDO-&gt;cofAC4x4[<span class="number">0</span>], ACLevel, <span class="number">18</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">        <span class="built_in">memcpy</span>(p_RDO-&gt;cofAC4x4[<span class="number">1</span>], ACRun,   <span class="number">18</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//--- set reconstruction ---</span></span><br><span class="line">        copy_4x4block(p_RDO-&gt;rec4x4[PLANE_Y], &amp;p_Vid-&gt;enc_picture-&gt;imgY[pic_pix_y], <span class="number">0</span>, pic_pix_x);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// SP/SI reconstruction</span></span><br><span class="line">        <span class="keyword">if</span>(currSlice-&gt;slice_type == SP_SLICE &amp;&amp; !currSlice-&gt;sp2_frame_indicator)</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="keyword">for</span> (y=<span class="number">0</span>; y&lt;<span class="number">4</span>; y++)</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="built_in">memcpy</span>(lrec4x4[y],&amp;p_Vid-&gt;lrec[pic_pix_y+y][pic_pix_x], BLOCK_SIZE * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));<span class="comment">// stores the mode coefficients</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//--- flag if transform-coefficients must be coded ---</span></span><br><span class="line">        nonzero = c_nz;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//--- set best mode update minimum cost ---</span></span><br><span class="line">        *min_cost     = rdcost;</span><br><span class="line">        min_rdcost    = rdcost;</span><br><span class="line">        best_ipmode   = ipmode;</span><br><span class="line"></span><br><span class="line">        best_nz_coeff = p_Vid-&gt;nz_coeff [currMB-&gt;mbAddrX][block_x4][block_y4];</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> BEST_NZ_COEFF</span></span><br><span class="line">        best_coded_block_flag = (<span class="keyword">int</span>)((currMB-&gt;cbp_bits[<span class="number">0</span>] &gt;&gt; bit_pos)&amp;(int64)(<span class="number">1</span>));</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        <span class="keyword">if</span> (p_Vid-&gt;AdaptiveRounding)</span><br><span class="line">        &#123;</span><br><span class="line">          store_adaptive_rounding_4x4 (p_Vid, p_Vid-&gt;ARCofAdj4x4, I4MB, block_y, block_x);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> INTRA_RDCOSTCALC_NNZ</span></span><br><span class="line">  p_Vid-&gt;nz_coeff [currMB-&gt;mbAddrX][block_x4][block_y4] = best_nz_coeff;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> BEST_NZ_COEFF</span></span><br><span class="line">  cbp_bits &amp;= (~(int64)(<span class="number">1</span>&lt;&lt;bit_pos));</span><br><span class="line">  cbp_bits |= (int64)(best_coded_block_flag&lt;&lt;bit_pos);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">/*循环完所有的预测模式后得到最终的最优模式并将相关信息保存下来*/</span></span><br><span class="line">  <span class="comment">//===== set intra mode prediction =====</span></span><br><span class="line">  p_Vid-&gt;ipredmode[pic_block_y][pic_block_x] = (<span class="keyword">char</span>) best_ipmode;</span><br><span class="line">  currMB-&gt;intra_pred_modes[<span class="number">4</span>*b8+b4] =</span><br><span class="line">    (<span class="keyword">char</span>) (mostProbableMode == best_ipmode ? <span class="number">-1</span> : (best_ipmode &lt; mostProbableMode ? best_ipmode : best_ipmode<span class="number">-1</span>)); </span><br><span class="line"></span><br><span class="line">  <span class="comment">//===== restore coefficients =====</span></span><br><span class="line">  <span class="built_in">memcpy</span> (ACLevel, p_RDO-&gt;cofAC4x4[<span class="number">0</span>], <span class="number">18</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">  <span class="built_in">memcpy</span> (ACRun,   p_RDO-&gt;cofAC4x4[<span class="number">1</span>], <span class="number">18</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line"></span><br><span class="line">  <span class="comment">//===== restore reconstruction and prediction (needed if single coeffs are removed) =====</span></span><br><span class="line">  copy_4x4block(&amp;p_Vid-&gt;enc_picture-&gt;imgY[pic_pix_y], p_RDO-&gt;rec4x4[PLANE_Y], pic_pix_x, <span class="number">0</span>);</span><br><span class="line">  copy_4x4block(&amp;currSlice-&gt;mb_pred[<span class="number">0</span>][block_y], currSlice-&gt;mpr_4x4[<span class="number">0</span>][best_ipmode], block_x, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 省略</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数在rd_intra_jm.c中，是在模式决策时进行调用的，包含了完整Intra_4x4预测模式的计算与决策。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">set_intrapred_4x4</span><span class="params">(Macroblock *currMB, ColorPlane pl, <span class="keyword">int</span> img_x,<span class="keyword">int</span> img_y, <span class="keyword">int</span> *left_available, <span class="keyword">int</span> *up_available, <span class="keyword">int</span> *all_available)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  VideoParameters *p_Vid = currMB-&gt;p_Vid;</span><br><span class="line">  InputParameters *p_Inp = currMB-&gt;p_Inp;</span><br><span class="line"></span><br><span class="line">  imgpel  *PredPel = currMB-&gt;intra4x4_pred[pl];  <span class="comment">// array of predictor pels</span></span><br><span class="line">  imgpel   **img_enc = p_Vid-&gt;enc_picture-&gt;p_curr_img;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/*img_x、img_y时当前宏块内一个像素点在一帧内的坐标(以像素为单位)，</span></span><br><span class="line"><span class="comment">    和15做与运算表示ioff、joff是该像素点在宏块内以当前宏块左上角像素为原点的相对坐标(取值范围均为0-15)*/</span></span><br><span class="line">  <span class="keyword">int</span> ioff = (img_x &amp; <span class="number">15</span>);</span><br><span class="line">  <span class="keyword">int</span> joff = (img_y &amp; <span class="number">15</span>);</span><br><span class="line"></span><br><span class="line">  PixelPos pix_a, pix_b, pix_c, pix_d;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">int</span> block_available_up;</span><br><span class="line">  <span class="keyword">int</span> block_available_left;</span><br><span class="line">  <span class="keyword">int</span> block_available_up_left;</span><br><span class="line">  <span class="keyword">int</span> block_available_up_right;</span><br><span class="line">  <span class="keyword">int</span> *mb_size = p_Vid-&gt;mb_size[IS_LUMA];</span><br><span class="line"></span><br><span class="line">  <span class="comment">//计算I、A、E、X的可用性</span></span><br><span class="line">  p_Vid-&gt;getNeighbour(currMB, ioff - <span class="number">1</span>, joff    , mb_size, &amp;pix_a);</span><br><span class="line">  p_Vid-&gt;getNeighbour(currMB, ioff    , joff - <span class="number">1</span>, mb_size, &amp;pix_b);</span><br><span class="line">  p_Vid-&gt;getNeighbour(currMB, ioff + <span class="number">4</span>, joff - <span class="number">1</span>, mb_size, &amp;pix_c);</span><br><span class="line">  p_Vid-&gt;getNeighbour(currMB, ioff - <span class="number">1</span>, joff - <span class="number">1</span>, mb_size, &amp;pix_d);</span><br><span class="line"></span><br><span class="line">  <span class="comment">//考虑到编码顺序的原因，相对坐标为(4,4)和(4,12)的右上角邻块仍未编码，所以右上角像素不可用</span></span><br><span class="line">  <span class="comment">//而(12,4)和(12,12)由于其右上角的邻块属于另一个宏块，在mb_available函数中就已经判断过了，因此无需再次判断</span></span><br><span class="line">  pix_c.available = pix_c.available &amp;&amp; !((ioff==<span class="number">4</span>) &amp;&amp; ((joff==<span class="number">4</span>)||(joff==<span class="number">12</span>)));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (p_Inp-&gt;UseConstrainedIntraPred)</span><br><span class="line">  &#123;</span><br><span class="line">    block_available_left     = pix_a.available ? p_Vid-&gt;intra_block [pix_a.mb_addr]: <span class="number">0</span>;</span><br><span class="line">    block_available_up       = pix_b.available ? p_Vid-&gt;intra_block [pix_b.mb_addr] : <span class="number">0</span>;</span><br><span class="line">    block_available_up_right = pix_c.available ? p_Vid-&gt;intra_block [pix_c.mb_addr] : <span class="number">0</span>;</span><br><span class="line">    block_available_up_left  = pix_d.available ? p_Vid-&gt;intra_block [pix_d.mb_addr] : <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    block_available_left     = pix_a.available;</span><br><span class="line">    block_available_up       = pix_b.available;</span><br><span class="line">    block_available_up_right = pix_c.available;</span><br><span class="line">    block_available_up_left  = pix_d.available;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//得到相邻块的可用性</span></span><br><span class="line">  *left_available = block_available_left;</span><br><span class="line">  *up_available   = block_available_up;</span><br><span class="line">  *all_available  = block_available_up &amp;&amp; block_available_left &amp;&amp; block_available_up_left;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/*根据可用情况对13个像素进行相应的赋值*/</span></span><br><span class="line">  <span class="comment">// form predictor pels</span></span><br><span class="line">  <span class="keyword">if</span> (block_available_up)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">memcpy</span>(&amp;PredPel[<span class="number">1</span>], &amp;img_enc[pix_b.pos_y][pix_b.pos_x], BLOCK_SIZE * <span class="keyword">sizeof</span>(imgpel));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    P_A = P_B = P_C = P_D = (imgpel) p_Vid-&gt;dc_pred_value;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (block_available_up_right)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">memcpy</span>(&amp;PredPel[<span class="number">5</span>], &amp;img_enc[pix_c.pos_y][pix_c.pos_x], BLOCK_SIZE * <span class="keyword">sizeof</span>(imgpel));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    P_E = P_F = P_G = P_H = P_D;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (block_available_left)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">int</span> pos_y = pix_a.pos_y;</span><br><span class="line">    <span class="keyword">int</span> pos_x = pix_a.pos_x;</span><br><span class="line">    P_I = img_enc[pos_y++][pos_x];</span><br><span class="line">    P_J = img_enc[pos_y++][pos_x];</span><br><span class="line">    P_K = img_enc[pos_y++][pos_x];</span><br><span class="line">    P_L = img_enc[pos_y  ][pos_x];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    P_I = P_J = P_K = P_L = p_Vid-&gt;dc_pred_value;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (block_available_up_left)</span><br><span class="line">  &#123;</span><br><span class="line">    P_X = img_enc[pix_d.pos_y][pix_d.pos_x];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    P_X = p_Vid-&gt;dc_pred_value;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在函数在intra4x4.c中，用于判断相邻4x4块像素的可用性并赋值。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">get_intrapred_4x4</span><span class="params">(Macroblock *currMB, ColorPlane pl, <span class="keyword">int</span> i4x4_mode, <span class="keyword">int</span> img_x, <span class="keyword">int</span> img_y, <span class="keyword">int</span> left_available, <span class="keyword">int</span> up_available)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  imgpel        *PredPel = currMB-&gt;intra4x4_pred[pl];  <span class="comment">// array of predictor pels</span></span><br><span class="line">  imgpel ***curr_mpr_4x4 = currMB-&gt;p_Slice-&gt;mpr_4x4[pl];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Note that currently prediction values are always placed starting from (0,0) and not according to block position. </span></span><br><span class="line">  <span class="comment">//根据预测模式分别调用不同的计算方法</span></span><br><span class="line">  <span class="keyword">switch</span> (i4x4_mode)</span><br><span class="line">  &#123;</span><br><span class="line">  <span class="keyword">case</span> VERT_PRED :    </span><br><span class="line">    get_i4x4_vertical(curr_mpr_4x4[VERT_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> HOR_PRED :</span><br><span class="line">    get_i4x4_horizontal(curr_mpr_4x4[HOR_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> DC_PRED :</span><br><span class="line">    get_i4x4_dc(curr_mpr_4x4[DC_PRED], PredPel, left_available, up_available);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> DIAG_DOWN_LEFT_PRED :</span><br><span class="line">    get_i4x4_downleft(curr_mpr_4x4[DIAG_DOWN_LEFT_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> DIAG_DOWN_RIGHT_PRED :</span><br><span class="line">    get_i4x4_downright(curr_mpr_4x4[DIAG_DOWN_RIGHT_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> VERT_RIGHT_PRED :</span><br><span class="line">    get_i4x4_vertright(curr_mpr_4x4[VERT_RIGHT_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> HOR_DOWN_PRED :</span><br><span class="line">    get_i4x4_hordown(curr_mpr_4x4[HOR_DOWN_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> VERT_LEFT_PRED :</span><br><span class="line">    get_i4x4_vertleft(curr_mpr_4x4[VERT_LEFT_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> HOR_UP_PRED :</span><br><span class="line">    get_i4x4_horup(curr_mpr_4x4[HOR_UP_PRED], PredPel);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"invalid prediction mode \n"</span>);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数在intra4x4.c中，用于调用不同预测模式的计算方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">generate_pred_error_4x4</span><span class="params">(imgpel **cur_img, imgpel **prd_img, imgpel **cur_prd, <span class="keyword">int</span> **m7, <span class="keyword">int</span> pic_opix_x, <span class="keyword">int</span> block_x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> j, i, *m7_line;</span><br><span class="line">  imgpel *cur_line, *prd_line;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; BLOCK_SIZE; j++)</span><br><span class="line">  &#123;</span><br><span class="line">    m7_line = &amp;m7[j][block_x]; <span class="comment">//差分值</span></span><br><span class="line">    cur_line = &amp;cur_img[j][pic_opix_x]; <span class="comment">//原始值</span></span><br><span class="line">    prd_line = prd_img[j]; <span class="comment">//预测值</span></span><br><span class="line">    <span class="built_in">memcpy</span>(&amp;cur_prd[j][block_x], prd_line, BLOCK_SIZE * <span class="keyword">sizeof</span>(imgpel));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; BLOCK_SIZE; i++)</span><br><span class="line">    &#123;</span><br><span class="line">      *m7_line++ = (<span class="keyword">int</span>) (*cur_line++ - *prd_line++); <span class="comment">//计算预测误差</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;        </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数在intra4x4.c中，用于计算像素的预测误差，用于后续编码。</p>
+<h1 id="Intra-16x16"><a href="#Intra-16x16" class="headerlink" title="Intra_16x16"></a>Intra_16x16</h1><p>Intra_16x16是对整个宏块进行预测，因此相对简单，共有四种预测模式，与Intra_4x4有些相似，用到了上方宏块的16个像素和左方宏块的16个像素，详见标准。其预测模式的编码比较特别，并非是单独编码，而是与CBP元素一起联合编码的，具体可参考标准的表格。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mode_decision_for_I16x16_MB</span> <span class="params">(Macroblock* currMB, <span class="keyword">int</span> lambda)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  find_best_mode_I16x16_MB (currMB, lambda, DISTBLK_MAX);<span class="comment">//找到最佳的预测模式</span></span><br><span class="line">  <span class="keyword">return</span> currMB-&gt;residual_transform_quant_luma_16x16 (currMB, PLANE_Y);<span class="comment">//变换、量化、反量化、反变换、重构、熵编码</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">find_best_mode_I16x16_MB</span> <span class="params">(Macroblock *currMB, <span class="keyword">int</span> lambda,  distblk min_cost)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  Slice *currSlice = currMB-&gt;p_Slice;</span><br><span class="line">  currMB-&gt;luma_transform_size_8x8_flag = FALSE;</span><br><span class="line">  <span class="keyword">return</span> (<span class="keyword">int</span>) currSlice-&gt;find_sad_16x16 (currMB);<span class="comment">//一般指向find_sad_16x16_JM</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上两个函数位于rd_intra_jm.c中，是在模式决策时进行调用的，流程和Intra4x4也是一样的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">distblk <span class="title">find_sad_16x16_JM</span><span class="params">(Macroblock *currMB)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  Slice *currSlice = currMB-&gt;p_Slice;</span><br><span class="line">  VideoParameters *p_Vid = currMB-&gt;p_Vid;</span><br><span class="line">  InputParameters *p_Inp = currMB-&gt;p_Inp;</span><br><span class="line">  distblk current_intra_sad_2, best_intra_sad2 = DISTBLK_MAX;</span><br><span class="line">  <span class="keyword">int</span> k;</span><br><span class="line">  imgpel  ***curr_mpr_16x16 = currSlice-&gt;mpr_16x16[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">int</span> up_avail, left_avail, left_up_avail;</span><br><span class="line"></span><br><span class="line">  currMB-&gt;i16mode = DC_PRED_16;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//类似地，计算相邻像素的可用性并赋值</span></span><br><span class="line">  currSlice-&gt;set_intrapred_16x16(currMB, PLANE_Y, &amp;left_avail, &amp;up_avail, &amp;left_up_avail);</span><br><span class="line">  <span class="comment">// For speed purposes, we should just unify all planes</span></span><br><span class="line">  <span class="keyword">if</span> (currSlice-&gt;P444_joined)</span><br><span class="line">  &#123;</span><br><span class="line">    currSlice-&gt;set_intrapred_16x16(currMB, PLANE_U, &amp;left_avail, &amp;up_avail, &amp;left_up_avail);</span><br><span class="line">    currSlice-&gt;set_intrapred_16x16(currMB, PLANE_V, &amp;left_avail, &amp;up_avail, &amp;left_up_avail);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//在四种模式中循环</span></span><br><span class="line">  <span class="keyword">for</span> (k = VERT_PRED_16; k &lt;= PLANE_16; k++)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//这几个标志暂时不知道什么意思</span></span><br><span class="line">    <span class="keyword">if</span> (p_Inp-&gt;IntraDisableInterOnly == <span class="number">0</span> || (currSlice-&gt;slice_type != I_SLICE &amp;&amp; currSlice-&gt;slice_type != SI_SLICE) )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> (p_Inp-&gt;Intra16x16ParDisable &amp;&amp; (k == VERT_PRED_16||k == HOR_PRED_16))</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (p_Inp-&gt;Intra16x16PlaneDisable &amp;&amp; k == PLANE_16)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//check if there are neighbours to predict from 只有可用的模式才进行计算</span></span><br><span class="line">    <span class="keyword">if</span> (!((k == VERT_PRED_16 &amp;&amp; !up_avail) || (k == HOR_PRED_16 &amp;&amp; !left_avail) || (k == PLANE_16 &amp;&amp; (!left_avail || !up_avail || !left_up_avail))))</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">//类似地，使用相应的预测模式进行预测</span></span><br><span class="line">      get_intrapred_16x16(currMB, PLANE_Y, k, left_avail, up_avail);</span><br><span class="line"></span><br><span class="line">      <span class="comment">//有趣的是distI16x16一般指向的是distI16x16_satd(在intra16x16.c中)，即计算的是SATD(hadamard变换后再绝对误差求和)</span></span><br><span class="line">      current_intra_sad_2 = currSlice-&gt;distI16x16(currMB, p_Vid-&gt;pCurImg, curr_mpr_16x16[k], best_intra_sad2);</span><br><span class="line">      <span class="keyword">if</span> (currSlice-&gt;P444_joined)</span><br><span class="line">      &#123;</span><br><span class="line">        get_intrapred_16x16(currMB, PLANE_U, k, left_avail, up_avail);</span><br><span class="line">        current_intra_sad_2 += currSlice-&gt;distI16x16(currMB, p_Vid-&gt;pImgOrg[<span class="number">1</span>], currSlice-&gt;mpr_16x16[<span class="number">1</span>][k], best_intra_sad2);</span><br><span class="line">        get_intrapred_16x16(currMB, PLANE_V, k, left_avail, up_avail);</span><br><span class="line">        current_intra_sad_2 += currSlice-&gt;distI16x16(currMB, p_Vid-&gt;pImgOrg[<span class="number">2</span>], currSlice-&gt;mpr_16x16[<span class="number">2</span>][k], best_intra_sad2);</span><br><span class="line">      &#125;</span><br><span class="line">    </span><br><span class="line">      <span class="comment">//找到SAD(绝对误差和)值最小的预测模式即为最佳模式</span></span><br><span class="line">      <span class="keyword">if</span> (current_intra_sad_2 &lt; best_intra_sad2)</span><br><span class="line">      &#123;</span><br><span class="line">        best_intra_sad2 = current_intra_sad_2;</span><br><span class="line">        currMB-&gt;i16mode = (<span class="keyword">char</span>) k; <span class="comment">// update best intra mode</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> best_intra_sad2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数在intra16x16.c中，与Intra4x4的相应函数相似，但这里主要用的是SAD作为最佳模式的衡量值（当然，如果有特别设置的情况下也是可以使用RDO作为度量的），但实际计算的一般是SATD，这点没有深究。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/H-264/" rel="tag"># H.264</a>
+          
+            <a href="/tags/Video/" rel="tag"># Video</a>
+          
+            <a href="/tags/JM/" rel="tag"># JM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/12/宏块访问/" rel="next" title="H.264/AVC编解码技术及JM源码分析（三）——宏块访问">
+                <i class="fa fa-chevron-left"></i> H.264/AVC编解码技术及JM源码分析（三）——宏块访问
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars3.githubusercontent.com/u/25165069?s=400&u=03ba742cd35d3f1bde28035a736fae28e6178c3e&v=4"
+                alt="Regent Tsui" />
+            
+              <p class="site-author-name" itemprop="name">Regent Tsui</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intra-4x4"><span class="nav-number">1.</span> <span class="nav-text">Intra_4x4</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Intra-16x16"><span class="nav-number">2.</span> <span class="nav-text">Intra_16x16</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Regent Tsui</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
+<script type="text/javascript" src="/js/src/love.js"></script>
