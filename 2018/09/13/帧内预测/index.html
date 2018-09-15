@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="H.264,Video,JM," />
+  <meta name="keywords" content="Video,H.264,JM," />
 
 
 
@@ -80,19 +80,19 @@
 
 
 <meta name="description" content="帧内预测是视频编码中非常重要的一环，H.264的帧内预测包括亮度预测和色度预测，其中亮度预测有四种类型：Intra_4x4，Intra_8x8，Intra_16x16和I_PCM。这里主要讲解Intra_4x4和Intra_16x16。需要注意的是用于帧内预测的相邻像素必须是在做去块滤波之前。同时，所有预测函数的调用实际上都是在模式决策这一环进行的，模式决策是个比较复杂且耗时的过程，有机会再仔细研">
-<meta name="keywords" content="H.264,Video,JM">
+<meta name="keywords" content="Video,H.264,JM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（三）——帧内预测">
 <meta property="og:url" content="http://yoursite.com/2018/09/13/帧内预测/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="帧内预测是视频编码中非常重要的一环，H.264的帧内预测包括亮度预测和色度预测，其中亮度预测有四种类型：Intra_4x4，Intra_8x8，Intra_16x16和I_PCM。这里主要讲解Intra_4x4和Intra_16x16。需要注意的是用于帧内预测的相邻像素必须是在做去块滤波之前。同时，所有预测函数的调用实际上都是在模式决策这一环进行的，模式决策是个比较复杂且耗时的过程，有机会再仔细研">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://raw.githubusercontent.com/regenttsui/blogpictures/master/%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B/Intra4x4.pdf">
-<meta property="og:updated_time" content="2018-09-14T11:01:12.196Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/regenttsui/blogpictures/master/%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B/Intra4x4.jpg">
+<meta property="og:updated_time" content="2018-09-15T06:39:08.101Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="H.264&#x2F;AVC编解码技术及JM源码分析（三）——帧内预测">
 <meta name="twitter:description" content="帧内预测是视频编码中非常重要的一环，H.264的帧内预测包括亮度预测和色度预测，其中亮度预测有四种类型：Intra_4x4，Intra_8x8，Intra_16x16和I_PCM。这里主要讲解Intra_4x4和Intra_16x16。需要注意的是用于帧内预测的相邻像素必须是在做去块滤波之前。同时，所有预测函数的调用实际上都是在模式决策这一环进行的，模式决策是个比较复杂且耗时的过程，有机会再仔细研">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/regenttsui/blogpictures/master/%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B/Intra4x4.pdf">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/regenttsui/blogpictures/master/%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B/Intra4x4.jpg">
 
 
 
@@ -375,7 +375,7 @@
 <ol>
 <li>如果相邻4x4块当前还未编码则不可用(按照标准的编码顺序会出现这种情况)。</li>
 <li>当UseConstrainedIntraPred的值为真时帧间编码的像素也不能用于进行帧内预测。</li>
-<li><p>若E-H像素不可用，可以使用D的值代替这几个像素的值。<br><img src="https://raw.githubusercontent.com/regenttsui/blogpictures/master/%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B/Intra4x4.pdf" alt="帧间预测"><br>Intra_4x4共有9种预测模式，以0-8表示，分别对应了不同的方向，如图所示。这些预测模式所利用到的相邻像素有所不同，若需要的相邻像素不可用，则表明该预测模式不可用，这种情况在第一行/列宏块中尤为严重，需要注意。这些预测模式的对像素值的计算方法均是一种线性关系，具体公式可以参考标准，此处不做赘述。编码时会从可用的模式中选取最佳的预测模式，编码最佳预测模式Mode的方法如下：</p>
+<li><p>若E-H像素不可用，可以使用D的值代替这几个像素的值。<br><img src="https://raw.githubusercontent.com/regenttsui/blogpictures/master/%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B/Intra4x4.jpg" alt="帧间预测"><br>Intra_4x4共有9种预测模式，以0-8表示，分别对应了不同的方向，如图所示。这些预测模式所利用到的相邻像素有所不同，若需要的相邻像素不可用，则表明该预测模式不可用，这种情况在第一行/列宏块中尤为严重，需要注意。这些预测模式的对像素值的计算方法均是一种线性关系，具体公式可以参考标准，此处不做赘述。编码时会从可用的模式中选取最佳的预测模式，编码最佳预测模式Mode的方法如下：</p>
 </li>
 <li><p>先根据标准中的方法从左邻块和上邻块的帧内预测模式估计出一个最可能的预测模式MPM。</p>
 </li>
@@ -413,9 +413,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/H-264/" rel="tag"># H.264</a>
-          
             <a href="/tags/Video/" rel="tag"># Video</a>
+          
+            <a href="/tags/H-264/" rel="tag"># H.264</a>
           
             <a href="/tags/JM/" rel="tag"># JM</a>
           
