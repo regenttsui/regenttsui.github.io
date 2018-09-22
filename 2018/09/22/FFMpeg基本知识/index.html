@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Video,FFmpeg," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta name="keywords" content="Video,FFmpeg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FFMpeg基本知识">
+<meta property="og:url" content="http://yoursite.com/2018/09/22/FFMpeg基本知识/index.html">
+<meta property="og:site_name" content="Regent&#39;s Blog">
+<meta property="og:description" content="本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-09-22T08:07:39.695Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FFMpeg基本知识">
+<meta name="twitter:description" content="本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/22/FFMpeg基本知识/"/>
+
+
+
+
+
+  <title>FFMpeg基本知识 | Regent's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/regenttsui"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Regent's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">萌新的杂货店</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/22/FFMpeg基本知识/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Regent Tsui">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/25165069?s=400&u=03ba742cd35d3f1bde28035a736fae28e6178c3e&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Regent's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">FFMpeg基本知识</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-22T16:02:00+08:00">
+                2018-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/视频技术/" itemprop="url" rel="index">
+                    <span itemprop="name">视频技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误)</p>
+<h1 id="FFMPEG最常用的结构体"><a href="#FFMPEG最常用的结构体" class="headerlink" title="FFMPEG最常用的结构体"></a>FFMPEG最常用的结构体</h1><a id="more"></a>
+<h2 id="解协议（http-rtsp-rtmp-mms）"><a href="#解协议（http-rtsp-rtmp-mms）" class="headerlink" title="解协议（http,rtsp,rtmp,mms）"></a>解协议（http,rtsp,rtmp,mms）</h2><p>协议(文件)操作的顶层结构是AVIOContext，这个对象实现了带缓冲的读写操作；FFMPEG的输入对象AVFormat的pb字段指向一个AVIOContext。</p>
+<p>AVIOContext的opaque实际指向一个URLContext对象，这个对象封装了协议对象及协议操作对象，其中prot指向具体的协议操作对象，priv_data指向具体的协议对象。</p>
+<p>URLProtocol为协议操作对象，针对每种协议，会有一个这样的对象，每个协议操作对象和一个协议对象关联。</p>
+<p>注意：FFMPEG中文件也被当做一种协议：file</p>
+<h2 id="解封装（flv-avi-rmvb-mp4）"><a href="#解封装（flv-avi-rmvb-mp4）" class="headerlink" title="解封装（flv,avi,rmvb,mp4）"></a>解封装（flv,avi,rmvb,mp4）</h2><p>AVFormatContext主要存储视音频封装格式中包含的信息；AVInputFormat存储输入视音频使用的封装格式。每种视音频封装格式都对应一个AVInputFormat结构。</p>
+<h2 id="解码（h264-mpeg2-aac-mp3）"><a href="#解码（h264-mpeg2-aac-mp3）" class="headerlink" title="解码（h264,mpeg2,aac,mp3）"></a>解码（h264,mpeg2,aac,mp3）</h2><p>每个AVStream存储一个视频/音频流的相关数据；每个AVStream对应一个AVCodecContext，存储该视频/音频流使用解码方式的相关数据；每个AVCodecContext中对应一个AVCodec，包含该视频/音频对应的解码器。每种解码器都对应一个AVCodec结构。</p>
+<h2 id="编解码数据"><a href="#编解码数据" class="headerlink" title="编解码数据"></a>编解码数据</h2><p>视频每个Packet是一帧；音频每个Packet可能包含若干帧。</p>
+<ul>
+<li>解码前数据：AVPacket</li>
+<li>解码后数据：AVFrame</li>
+</ul>
+<h1 id="解码基本流程"><a href="#解码基本流程" class="headerlink" title="解码基本流程"></a>解码基本流程</h1><ol>
+<li>从封装文件中拿到流。</li>
+<li>从流中读取数据包到packet。</li>
+<li>将packet解码为frame。</li>
+<li>处理frame。</li>
+<li>跳到步骤2。</li>
+</ol>
+<h2 id="详细："><a href="#详细：" class="headerlink" title="详细："></a>详细：</h2><ol>
+<li>创建AVFormatContext，用以管理文件的输入输出，可以直接赋予空指针，然后由后续函数分配内存：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVFormatContext *fmt_ctx = <span class="literal">NULL</span>;</span><br></pre></td></tr></table></figure>
+<pre><code>也可以用函数分配内存：
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVFormatContext *fmt_ctx = avformat_alloc_context();</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>然后用以下函数打开输入：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avformat_open_input(AVFormatContext **ps, <span class="keyword">const</span> <span class="keyword">char</span> *url, AVInputFormat *fmt, AVDictionary **options)</span><br></pre></td></tr></table></figure>
+<pre><code>该函数会读取媒体文件的文件头并将文件格式相关的信息存储在我们作为第一个参数传入的AVFormatContext中。第二个参数为视频地址，这个可以是本地视频文件地址，也可以是视频流地址。第三个参数用于指定媒体文件格式，第四个参数是文件格式相关选项。如果后面这两个参数传入的是NULL，那么 libavformat 将自动探测文件格式。如果文件打开失败，返回值为负值，要调用avformat_free_context()及时释放掉AVFormatContext(好像会自动释放？)。如果打开成功，返回值为0，且等到后面不再需要输入文件的操作时，要调用avformat_close_input(AVFormatContext **s)来关闭输入。
+</code></pre><ol start="3">
+<li>接着需要将视音频流的信息读取到AVFormatContext，AVFormatContext中有信息，才能进行查找视频流、音频流及相应的解码器的操作：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options)</span><br></pre></td></tr></table></figure>
+<pre><code>第二个参数一般填NULL。返回值&gt;=0表示成功。
+</code></pre><ol start="4">
+<li>调试函数:</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">av_dump_format(AVFormatContext *ic,<span class="keyword">int</span> index,<span class="keyword">const</span> <span class="keyword">char</span> *url,<span class="keyword">int</span> is_output)</span><br></pre></td></tr></table></figure>
+<pre><code>可以为我们打印 AVFormatContext 中都有哪些信息。url是文件，index和output一般填0。AVFormatContext 里包含了下面这些跟媒体信息有关的成员：
+</code></pre><ul>
+<li>struct AVInputFormat *iformat：输入数据的封装格式</li>
+<li>AVIOContext *pb：输入数据的缓存</li>
+<li>unsigned int nb_streams：视音频流的个数</li>
+<li>AVStream **streams：视音频流</li>
+<li>char filename[1024]：文件名</li>
+<li>int64_t duration：时长（单位：微秒us，转换为秒需要除以1000000，即除以AV_TIME_BASE）</li>
+<li>int bit_rate：比特率（单位bps，转换为kbps需要除以1000）</li>
+<li>AVDictionary *metadata：元数据</li>
+</ul>
+<ol start="5">
+<li>接下来需要初始化视音频的AVCodec(解码器)和AVCodecContext(解码器上下文)。注意，这里音频的AVCodec和AVCodecContext和视频的是分开的，但是它们的流程是一模一样的。首先根据类型找到音频或视频的序号，并在同时匹配到最适合的解码器：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> streamIndex = av_find_best_stream(AVFormatContext *ic,</span><br><span class="line">                        <span class="keyword">enum</span> AVMediaType type,</span><br><span class="line">                        <span class="keyword">int</span> wanted_stream_nb,</span><br><span class="line">                        <span class="keyword">int</span> related_stream,</span><br><span class="line">                        AVCodec **decoder_ret,</span><br><span class="line">                        <span class="keyword">int</span> flags);</span><br></pre></td></tr></table></figure>
+<pre><code>AVMediaType是AVMEDIA_TYPE_VIDEO或AVMEDIA_TYPE_AUDIO，wanted_stream_nb和related_stream传-1。decoder_ret传入一个新建的AVCodec *codec，这样可以直接将查找到的解码器填充进去，当然有可能查找失败，所以应该判断一下codec是否为NULL。flags传0。函数返回值为相应流的序号，负值代表失败。
+</code></pre><ol start="6">
+<li>通过序号就能找到视频流或者音频流：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVStream *stream = fmt_ctx-&gt;streams[streamIndex];</span><br></pre></td></tr></table></figure>
+<ol start="7">
+<li>接下来通过匹配到的解码器创建AVCodecContext(解码器上下文)并把视/音频流里的参数传到视/音频解码器中：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVCodecContext *codecContext = avcodec_alloc_context3(codec);</span><br></pre></td></tr></table></figure>
+<pre><code>codecContext为NULL表示失败。
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avcodec_parameters_to_context(codecContext, stream-&gt;codecpar);</span><br></pre></td></tr></table></figure>
+<pre><code>返回负值表示失败。
+</code></pre><ol start="8">
+<li>接下来就可以打开解码器上下文准备进行解码操作了：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avcodec_open2(AVCodecContext *avctx, <span class="keyword">const</span> AVCodec *codec, AVDictionary **options)</span><br></pre></td></tr></table></figure>
+<pre><code>最后一个参数填NULL，返回负值表示失败。
+</code></pre><ol start="9">
+<li>分配AVPacket和AVFrame的内存:</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVPacket *pkt = av_packet_alloc();AVFrame *frame = av_frame_alloc();</span><br></pre></td></tr></table></figure>
+<pre><code>这两个语句分配的内存不包括存储数据的部分，失败时返回NULL。
+</code></pre><ol start="10">
+<li>循环调用函数：</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">av_read_frame(AVFormatContext *s, AVPacket *pkt)</span><br></pre></td></tr></table></figure>
+<pre><code>该函数从视频流中读取一个数据包 packet，把它存储在 AVPacket 数据结构中。其中packet.data这个指针会指向这些数据，而这些数据占用的内存需要通过av_packet_unref()函数来释放，即该packet出现问题时需要释放内存才能继续下一packet的读取。
+
+然后在循环中先调用avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt)发送
+
+再调用avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame)接收。
+
+如果发送函数报AVERROR(EAGAIN)的错，表示已发送的AVPacket还没有被接收，不允许发送新的AVPacket。如果是接收函数报这个错，表示没有新的AVPacket可以接收，需要先发送AVPacket才能执行这个函数。而如果报AVERROR_EOF的错，在以上4个函数中都表示编解码器处于已经刷新完成的状态，没有数据可以进行发送和接收操作。
+</code></pre><ol start="11">
+<li>最后释放内存</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">avcodec_free_context(*AVCodecContext);</span><br><span class="line">av_frame_free(&amp;frame);</span><br><span class="line">av_packet_free(&amp;pkt);</span><br><span class="line">avformat_close_input(&amp;fmt_ctx);</span><br></pre></td></tr></table></figure>
+<h1 id="图像数据内存分配与释放"><a href="#图像数据内存分配与释放" class="headerlink" title="图像数据内存分配与释放"></a>图像数据内存分配与释放</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_get_buffer_size</span> <span class="params">(<span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> align)</span></span></span><br></pre></td></tr></table></figure>
+<p>返回对应图像格式和大小的图像所占的字节数，最后一个参数是内存对齐的对齐数，也就是按多大的字节进行内存对齐。比如设置为1，表示按1字节对齐，那么得到的结果就是与实际的内存大小一样。再比如设置为4，表示按4字节对齐。也就是内存的起始地址必须是4的整倍数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">av_malloc</span><span class="params">(<span class="keyword">size_t</span> size)</span></span></span><br></pre></td></tr></table></figure>
+<p>申请指定字节数的内存，返回相应的指针，NULL表示分配内存失败。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_fill_arrays</span><span class="params">(<span class="keyword">uint8_t</span> *dst_data[<span class="number">4</span>], <span class="keyword">int</span> dst_linesize[<span class="number">4</span>],<span class="keyword">const</span> <span class="keyword">uint8_t</span> *src,<span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> align)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>函数自身不具备内存申请的功能，此函数类似于格式化已经申请的内存，即通过av_malloc()函数申请的内存空间。再者，av_image_fill_arrays()中参数具体说明(中括号里表明是输入还是输出)：</p>
+<ul>
+<li>dst_data[4]：[out]对申请的内存格式化为三个通道后，分别保存其地址。</li>
+<li>dst_linesize[4]: [out]格式化的内存的步长（即内存对齐后的宽度) 注：linesize每行的大小不一定等于图像的宽度，因为pack格式图像的所有分量储存在同一个通道中，如data[0]。</li>
+<li>*src: [in]av_malloc()函数申请的内存地址(av_malloc返回的指针)。</li>
+<li>pix_fmt: [in] 申请 src内存时的像素格式。</li>
+<li>width: [in]申请src内存时指定的宽度。</li>
+<li>height: [in]申请scr内存时指定的高度。</li>
+<li><p>align: [in]申请src内存时指定的对齐字节数。</p>
+<p> <strong>通常上面三个函数一起调用。或者用下面的一步到位的简化函数</strong></p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_alloc</span><span class="params">(<span class="keyword">uint8_t</span> *pointers[<span class="number">4</span>], <span class="keyword">int</span> linesizes[<span class="number">4</span>],<span class="keyword">int</span> w, <span class="keyword">int</span> h, <span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> align)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>pointers[4]：保存图像通道的地址。如果是RGB，则前三个指针分别指- R,G,B的内存地址。第四个指针保留不用。</li>
+<li>linesizes[4]：保存图像每个通道的内存对齐的步长，即一行的对齐内- 的宽度，此值大小在planar图像中等于图像宽度。</li>
+<li>w:  要申请内存的图像宽度。</li>
+<li>h:  要申请内存的图像高度。</li>
+<li>pix_fmt: 要申请内存的图像的像素格式。</li>
+<li>align: 用于内存对齐的值。一般为1。</li>
+<li>返回值：所申请的内存空间的总大小。如果是负值，表示申请失败。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">av_freep</span><span class="params">(<span class="keyword">void</span> *ptr)</span></span></span><br></pre></td></tr></table></figure>
+<p>释放指针并置为NULL，上面分配的dst_data[4]/pointers[4]最后要用此函数释放。当然也可以定义一个AVframe，用其相应的结构承载内存，最后由av_frame_free(&amp;frame)负责释放</p>
+<h1 id="图片像素数据处理libswscale"><a href="#图片像素数据处理libswscale" class="headerlink" title="图片像素数据处理libswscale"></a>图片像素数据处理libswscale</h1><p>该库可以改变图像尺寸，转换像素格式等，总体流程是：</p>
+<ol>
+<li><p>sws_getContext()：初始化一个SwsContext。</p>
+</li>
+<li><p>sws_scale()：处理图像数据。</p>
+</li>
+<li><p>sws_freeContext()：释放一个SwsContext。</p>
+</li>
+</ol>
+<h2 id="具体"><a href="#具体" class="headerlink" title="具体"></a>具体</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">struct SwsContext *<span class="title">sws_getContext</span><span class="params">(<span class="keyword">int</span> srcW, <span class="keyword">int</span> srcH, <span class="keyword">enum</span> AVPixelFormat srcFormat,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">int</span> dstW, <span class="keyword">int</span> dstH, <span class="keyword">enum</span> AVPixelFormat dstFormat,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">int</span> flags, SwsFilter *srcFilter,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  SwsFilter *dstFilter, <span class="keyword">const</span> <span class="keyword">double</span> *param)</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>AVPixelFormat 为输入和输出图片数据的类型，eg：AV_PIX_FMT_YUV420、PAV_PIX_FMT_RGB24；int flags 为scale算法种类；后面三个指针一般为NULL。</li>
+<li>出错返回NULL。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sws_scale</span><span class="params">(struct SwsContext *c, <span class="keyword">const</span> <span class="keyword">uint8_t</span> *<span class="keyword">const</span> srcSlice[],</span></span></span><br><span class="line"><span class="function"><span class="params">              <span class="keyword">const</span> <span class="keyword">int</span> srcStride[], <span class="keyword">int</span> srcSliceY, <span class="keyword">int</span> srcSliceH,</span></span></span><br><span class="line"><span class="function"><span class="params">              <span class="keyword">uint8_t</span> *<span class="keyword">const</span> dst[], <span class="keyword">const</span> <span class="keyword">int</span> dstStride[])</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>const uint8_t <em>const srcSlice[]，uint8_t </em>const dst[]：输输出图像数据各颜色通道的buffer指针数组；</li>
+<li>const int srcStride[]，const int dstStride[]：输入输出图像据各颜色通道每行存储的字节数数组；</li>
+<li>int srcSliceY：从输入图像数据的第多少列开始逐行扫描，通常设0；</li>
+<li>int srcSliceH：需要扫描多少行，通常为输入图像数据的高度；</li>
+<li>返回输出图像高度。</li>
+</ul>
+<h1 id="时间戳timestamp"><a href="#时间戳timestamp" class="headerlink" title="时间戳timestamp"></a>时间戳timestamp</h1><p>时间戳是以时间基(timebase)为单位的具体时间表示，有PTS和DTS两种，一般在有B帧编码的情况下两者都会用到，没有B帧时，两者一般保持一样。</p>
+<ul>
+<li>DTS（Decoding Time Stamp）：即解码时间戳，这个时间戳的意义在于告诉播放器该在什么时候解码这一帧的数据。</li>
+<li>PTS（Presentation Time Stamp）：即显示时间戳，这个时间戳用来告诉播放器该在什么时候显示这一帧的数据。</li>
+</ul>
+<h1 id="时间基timebase"><a href="#时间基timebase" class="headerlink" title="时间基timebase"></a>时间基timebase</h1><p>ffmpeg存在多个时间基(time_base)，对应不同的阶段(结构体)，每个time_base具体的值不一样，ffmpeg提供函数在各个time_base中进行切换。<br>首先要知道AVRatioal的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">AVRational</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> num; <span class="comment">//numerator</span></span><br><span class="line">    <span class="keyword">int</span> den; <span class="comment">//denominator</span></span><br><span class="line">&#125; AVRational;</span><br></pre></td></tr></table></figure>
+<p>ffmpeg提供了一个把AVRatioal结构转换成double的函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static inline double av_q2d(AVRational a)｛</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Convert rational to double.</span></span><br><span class="line"><span class="comment">* @param a rational to convert</span></span><br><span class="line"><span class="comment">**/</span></span><br><span class="line">    <span class="keyword">return</span> a.num / (<span class="keyword">double</span>) a.den;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="不同的时间基"><a href="#不同的时间基" class="headerlink" title="不同的时间基"></a>不同的时间基</h2><ul>
+<li>AV_TIME_BASE</li>
+</ul>
+<p>ffmpeg中的“内部时间基”，以微秒为单位，作为某些变量的基本时间单位，比如AVFormatContext中的duration即以其倒数(AV_TIME_BASE_Q)为基本单位，意味着这个流的长度为duration微秒，要除以AV_TIME_BASE(即乘以AV_TIME_BASE_Q)才能得到单位是秒的结果。此处也说明它和别的time_base刚好相反，因为别的time_base都是直接用秒的倒数来表示的。AV_TIME_BASE定义为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span>         AV_TIME_BASE   1000000</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>AV_TIME_BASE_Q</li>
+</ul>
+<p>ffmpeg内部时间基的分数表示，实际上它是AV_TIME_BASE的倒数。从它的定义能很清楚的看到这点，1秒除以1000000即1微秒：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span>         AV_TIME_BASE_Q   (AVRational)&#123;1, AV_TIME_BASE&#125;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>AVStream-&gt;time_base</li>
+</ul>
+<p>根据时钟采样率来决定的，单位为秒，如：1/90000。根据封装格式不一样，avformat_write_header()可能修改AVStream-&gt;time_base，比如mpegts修改为90000，flv修改为1000，mp4根据设置time_base，如果小于10000，会将time_base*2的幂直到大于10000。AVPacket的pts和dts以AVStream的time_base为单位。</p>
+<ul>
+<li>AVCodecContext-&gt;time_base</li>
+</ul>
+<p>根据视频帧率/音频采样率来决定的，单位为秒，如：通常视频的该time_base值是 1/framerate，音频则是1/samplerate。时间戳pts、dts每增加1实际上代表的是增加了一个time_base的时间。AVFrame的pts和dts以AVStream的time_base为单位，而AVFrame里面的pkt_pts和pkt_dts是拷贝自AVPacket，同样以AVStream-&gt;time_base为单位。AVFrame的pts用av_frame_get_best_effort_timestamp获取比较好。</p>
+<ul>
+<li><p>InputStream这个结构的pts和dts以AV_TIME_BASE为单位</p>
+</li>
+<li><p>问题的关键是不同的场景下取到的数据帧的time是相对哪个时间体系的：</p>
+<p>demux出来的帧的time：是相对于源AVStream的timebase。</p>
+<p>编码器出来的帧的time：是相对于源AVCodecContext的timebase。</p>
+<p>mux存入文件等容器的time：是相对于目的AVStream的timebase。</p>
+<p>这里的time指pts。</p>
+</li>
+</ul>
+<h2 id="计算"><a href="#计算" class="headerlink" title="计算"></a>计算</h2><ul>
+<li><p>根据pts来计算某一帧在整个视频中的时间位置(PTS转常规时间)：</p>
+<p>time(秒) = pts * av_q2d(st-&gt;time_base)</p>
+</li>
+<li><p>计算视频长度：</p>
+<p>time(秒) = st-&gt;duration * av_q2d(st-&gt;time_base)</p>
+</li>
+<li><p>常规时间转PTS：(存疑？)</p>
+<p>pts = time * 1/av_q2d(st-&gt;time_base)</p>
+</li>
+</ul>
+<p><strong>这里的st是一个AVStream对象指针。pts应该也是AVStream-&gt;time_base为单位。似乎一般都是用AVStream的time_base和相应单位的pts来得到真实的时间。</strong></p>
+<ul>
+<li><p>ffmpeg提供了不同时间基之间的转换函数：</p>
+<p>int64_t av_rescale_q(int64_t a, AVRational bq, AVRational cq)</p>
+<p>这个函数的作用是计算a * bq / cq，来把时间戳从一个时基调整到另外一个时基。在进行时基转换的时候，应该首选这个函数，因为它可以避免溢出的情况发生。av_rescale_q(pts, timebase1, timebase2)的含义即是：</p>
+<p>new_pts = pts <em> (timebase1.num / timebase1.den ) </em> (timebase2.den / timebase2.num)</p>
+</li>
+</ul>
+<h2 id="几个含义"><a href="#几个含义" class="headerlink" title="几个含义"></a>几个含义</h2><p>st为AVStream：</p>
+<ul>
+<li>fps = st-&gt;avg_frame_rate：平均帧率</li>
+<li>tbr = st-&gt;r_frame_rate：这是可以准确表示所有时间戳的最低帧率（它是流中所有帧率的最小公倍数），猜测值。</li>
+<li>tbn = st-&gt;time_base：AVStream的timebase</li>
+<li>tbc = st-&gt;codec-&gt;time_base：AVCodecContext的timebase。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Video/" rel="tag"># Video</a>
+          
+            <a href="/tags/FFmpeg/" rel="tag"># FFmpeg</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/13/VS-Qt-FFmpeg-SDL/" rel="next" title="VS2017+Qt+FFmpeg+SDL配置">
+                <i class="fa fa-chevron-left"></i> VS2017+Qt+FFmpeg+SDL配置
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars3.githubusercontent.com/u/25165069?s=400&u=03ba742cd35d3f1bde28035a736fae28e6178c3e&v=4"
+                alt="Regent Tsui" />
+            
+              <p class="site-author-name" itemprop="name">Regent Tsui</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#FFMPEG最常用的结构体"><span class="nav-number">1.</span> <span class="nav-text">FFMPEG最常用的结构体</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解协议（http-rtsp-rtmp-mms）"><span class="nav-number">1.1.</span> <span class="nav-text">解协议（http,rtsp,rtmp,mms）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解封装（flv-avi-rmvb-mp4）"><span class="nav-number">1.2.</span> <span class="nav-text">解封装（flv,avi,rmvb,mp4）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解码（h264-mpeg2-aac-mp3）"><span class="nav-number">1.3.</span> <span class="nav-text">解码（h264,mpeg2,aac,mp3）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编解码数据"><span class="nav-number">1.4.</span> <span class="nav-text">编解码数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解码基本流程"><span class="nav-number">2.</span> <span class="nav-text">解码基本流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#详细："><span class="nav-number">2.1.</span> <span class="nav-text">详细：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图像数据内存分配与释放"><span class="nav-number">3.</span> <span class="nav-text">图像数据内存分配与释放</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图片像素数据处理libswscale"><span class="nav-number">4.</span> <span class="nav-text">图片像素数据处理libswscale</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#具体"><span class="nav-number">4.1.</span> <span class="nav-text">具体</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间戳timestamp"><span class="nav-number">5.</span> <span class="nav-text">时间戳timestamp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间基timebase"><span class="nav-number">6.</span> <span class="nav-text">时间基timebase</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#不同的时间基"><span class="nav-number">6.1.</span> <span class="nav-text">不同的时间基</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算"><span class="nav-number">6.2.</span> <span class="nav-text">计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几个含义"><span class="nav-number">6.3.</span> <span class="nav-text">几个含义</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Regent Tsui</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
+<script type="text/javascript" src="/js/src/love.js"></script>
