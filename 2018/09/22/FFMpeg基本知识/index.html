@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta name="description" content="鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFmpeg最常用的结构体">
 <meta name="keywords" content="Video,FFmpeg">
 <meta property="og:type" content="article">
 <meta property="og:title" content="FFMpeg基本知识">
 <meta property="og:url" content="http://yoursite.com/2018/09/22/FFMpeg基本知识/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
-<meta property="og:description" content="鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta property="og:description" content="鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFmpeg最常用的结构体">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-23T01:22:47.447Z">
+<meta property="og:updated_time" content="2018-09-23T01:38:23.500Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FFMpeg基本知识">
-<meta name="twitter:description" content="鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta name="twitter:description" content="鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFmpeg最常用的结构体">
 
 
 
@@ -368,12 +368,12 @@
       
 
       
-        <p>鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误)</p>
-<h1 id="FFMPEG最常用的结构体"><a href="#FFMPEG最常用的结构体" class="headerlink" title="FFMPEG最常用的结构体"></a>FFMPEG最常用的结构体</h1><a id="more"></a>
-<h2 id="解协议（http-rtsp-rtmp-mms）"><a href="#解协议（http-rtsp-rtmp-mms）" class="headerlink" title="解协议（http,rtsp,rtmp,mms）"></a>解协议（http,rtsp,rtmp,mms）</h2><p>协议(文件)操作的顶层结构是AVIOContext，这个对象实现了带缓冲的读写操作；FFMPEG的输入对象AVFormat的pb字段指向一个AVIOContext。</p>
+        <p>鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误)</p>
+<h1 id="FFmpeg最常用的结构体"><a href="#FFmpeg最常用的结构体" class="headerlink" title="FFmpeg最常用的结构体"></a>FFmpeg最常用的结构体</h1><a id="more"></a>
+<h2 id="解协议（http-rtsp-rtmp-mms）"><a href="#解协议（http-rtsp-rtmp-mms）" class="headerlink" title="解协议（http,rtsp,rtmp,mms）"></a>解协议（http,rtsp,rtmp,mms）</h2><p>协议(文件)操作的顶层结构是AVIOContext，这个对象实现了带缓冲的读写操作；FFmpeg的输入对象AVFormat的pb字段指向一个AVIOContext。</p>
 <p>AVIOContext的opaque实际指向一个URLContext对象，这个对象封装了协议对象及协议操作对象，其中prot指向具体的协议操作对象，priv_data指向具体的协议对象。</p>
 <p>URLProtocol为协议操作对象，针对每种协议，会有一个这样的对象，每个协议操作对象和一个协议对象关联。</p>
-<p>注意：FFMPEG中文件也被当做一种协议：file。</p>
+<p>注意：FFmpeg中文件也被当做一种协议：file。</p>
 <h2 id="解封装（flv-avi-rmvb-mp4）"><a href="#解封装（flv-avi-rmvb-mp4）" class="headerlink" title="解封装（flv,avi,rmvb,mp4）"></a>解封装（flv,avi,rmvb,mp4）</h2><p>AVFormatContext主要存储视音频封装格式中包含的信息；AVInputFormat存储输入视音频使用的封装格式。每种视音频封装格式都对应一个AVInputFormat结构。</p>
 <h2 id="解码（h264-mpeg2-aac-mp3）"><a href="#解码（h264-mpeg2-aac-mp3）" class="headerlink" title="解码（h264,mpeg2,aac,mp3）"></a>解码（h264,mpeg2,aac,mp3）</h2><p>每个AVStream存储一个视频/音频流的相关数据；每个AVStream对应一个AVCodecContext，存储该视频/音频流使用解码方式的相关数据；每个AVCodecContext中对应一个AVCodec，包含该视频/音频对应的解码器。每种解码器都对应一个AVCodec结构。</p>
 <h2 id="编解码数据"><a href="#编解码数据" class="headerlink" title="编解码数据"></a>编解码数据</h2><p>视频每个Packet是一帧；音频每个Packet可能包含若干帧。</p>
@@ -750,7 +750,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#FFMPEG最常用的结构体"><span class="nav-number">1.</span> <span class="nav-text">FFMPEG最常用的结构体</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解协议（http-rtsp-rtmp-mms）"><span class="nav-number">1.1.</span> <span class="nav-text">解协议（http,rtsp,rtmp,mms）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解封装（flv-avi-rmvb-mp4）"><span class="nav-number">1.2.</span> <span class="nav-text">解封装（flv,avi,rmvb,mp4）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解码（h264-mpeg2-aac-mp3）"><span class="nav-number">1.3.</span> <span class="nav-text">解码（h264,mpeg2,aac,mp3）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编解码数据"><span class="nav-number">1.4.</span> <span class="nav-text">编解码数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解码基本流程"><span class="nav-number">2.</span> <span class="nav-text">解码基本流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#详细："><span class="nav-number">2.1.</span> <span class="nav-text">详细：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图像数据内存分配与释放"><span class="nav-number">3.</span> <span class="nav-text">图像数据内存分配与释放</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图片像素数据处理libswscale"><span class="nav-number">4.</span> <span class="nav-text">图片像素数据处理libswscale</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#具体"><span class="nav-number">4.1.</span> <span class="nav-text">具体</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间戳timestamp"><span class="nav-number">5.</span> <span class="nav-text">时间戳timestamp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间基timebase"><span class="nav-number">6.</span> <span class="nav-text">时间基timebase</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#不同的时间基"><span class="nav-number">6.1.</span> <span class="nav-text">不同的时间基</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算"><span class="nav-number">6.2.</span> <span class="nav-text">计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几个含义"><span class="nav-number">6.3.</span> <span class="nav-text">几个含义</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#FFmpeg最常用的结构体"><span class="nav-number">1.</span> <span class="nav-text">FFmpeg最常用的结构体</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解协议（http-rtsp-rtmp-mms）"><span class="nav-number">1.1.</span> <span class="nav-text">解协议（http,rtsp,rtmp,mms）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解封装（flv-avi-rmvb-mp4）"><span class="nav-number">1.2.</span> <span class="nav-text">解封装（flv,avi,rmvb,mp4）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解码（h264-mpeg2-aac-mp3）"><span class="nav-number">1.3.</span> <span class="nav-text">解码（h264,mpeg2,aac,mp3）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编解码数据"><span class="nav-number">1.4.</span> <span class="nav-text">编解码数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解码基本流程"><span class="nav-number">2.</span> <span class="nav-text">解码基本流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#详细："><span class="nav-number">2.1.</span> <span class="nav-text">详细：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图像数据内存分配与释放"><span class="nav-number">3.</span> <span class="nav-text">图像数据内存分配与释放</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图片像素数据处理libswscale"><span class="nav-number">4.</span> <span class="nav-text">图片像素数据处理libswscale</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#具体"><span class="nav-number">4.1.</span> <span class="nav-text">具体</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间戳timestamp"><span class="nav-number">5.</span> <span class="nav-text">时间戳timestamp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间基timebase"><span class="nav-number">6.</span> <span class="nav-text">时间基timebase</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#不同的时间基"><span class="nav-number">6.1.</span> <span class="nav-text">不同的时间基</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算"><span class="nav-number">6.2.</span> <span class="nav-text">计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几个含义"><span class="nav-number">6.3.</span> <span class="nav-text">几个含义</span></a></li></ol></li></ol></div>
             
 
           </div>

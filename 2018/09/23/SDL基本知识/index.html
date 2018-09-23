@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
+<meta name="description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
 <meta name="keywords" content="Video,SDL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="SDL基本知识">
 <meta property="og:url" content="http://yoursite.com/2018/09/23/SDL基本知识/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
-<meta property="og:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
+<meta property="og:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-23T01:13:17.031Z">
+<meta property="og:updated_time" content="2018-09-23T01:35:52.300Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="SDL基本知识">
-<meta name="twitter:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
+<meta name="twitter:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
 
 
 
@@ -368,7 +368,7 @@
       
 
       
-        <p>本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。<br><a id="more"></a></p>
+        <p>本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。<br><a id="more"></a></p>
 <h1 id="使用SDL播放一个视频代码流程大体如下："><a href="#使用SDL播放一个视频代码流程大体如下：" class="headerlink" title="使用SDL播放一个视频代码流程大体如下："></a>使用SDL播放一个视频代码流程大体如下：</h1><ul>
 <li>初始化:<ul>
 <li>SDL_Init(): 初始化SDL</li>
@@ -395,10 +395,10 @@
 <li>SDL_INIT_HAPTIC：触摸屏</li>
 <li>SDL_INIT_GAMECONTROLLER：游戏控制器</li>
 <li>SDL_INIT_EVENTS：事件</li>
-<li>SDL_INIT_NOPARACHUTE：不捕获关键信号（这个没研究过）</li>
+<li>SDL_INIT_NOPARACHUTE：不捕获关键信号</li>
 <li>SDL_INIT_EVERYTHING：包含上述所有选项</li>
 </ul>
-<p>有关SDL_Init()有一点需要注意：初始化的时候尽量只激活需要用到的子系统，而不要用SDL_INIT_EVERYTHING。因为有些情况下使用SDL_INIT_EVERYTHING会出现一些不可预知的问题。</p>
+<p>SDL_Init()有一点需要注意：初始化的时候尽量只激活需要用到的子系统，而不要用SDL_INIT_EVERYTHING。因为有些情况下使用SDL_INIT_EVERYTHING会出现一些不可预知的问题。</p>
 <h1 id="创建窗口（Window）"><a href="#创建窗口（Window）" class="headerlink" title="创建窗口（Window）"></a>创建窗口（Window）</h1><p>使用SDL_CreateWindow()创建一个用于视频播放的窗口，这是一种逻辑上的窗口，必须经过渲染才能显示。SDL_CreateWindow()的原型如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_Window * SDLCALL <span class="title">SDL_CreateWindow</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *title,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                      <span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span> w,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                      <span class="keyword">int</span> h, Uint32 flags)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>参数含义如下:</p>
@@ -408,13 +408,11 @@
 <li>y     ：窗口位置y坐标。同上。</li>
 <li>w     ：窗口的宽</li>
 <li>h     ：窗口的高</li>
-<li><p>flags ：支持下列标识。包括了窗口的是否最大化、最小化，能否调整边界等等属性。</p>
-<p>  ::SDL_WINDOW_FULLSCREEN,    ::SDL_WINDOW_OPENGL,<br>  ::SDL_WINDOW_HIDDEN,        ::SDL_WINDOW_BORDERLESS,<br>  ::SDL_WINDOW_RESIZABLE,     ::SDL_WINDOW_MAXIMIZED,<br>  ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,<br>  ::SDL_WINDOW_ALLOW_HIGHDPI</p>
-</li>
+<li>flags ：支持下列标识。包括了窗口的是否最大化、最小化，能否调整边界等等属性。<br>  ::SDL_WINDOW_FULLSCREEN,    ::SDL_WINDOW_OPENGL,<br>  ::SDL_WINDOW_HIDDEN,        ::SDL_WINDOW_BORDERLESS,<br>  ::SDL_WINDOW_RESIZABLE,     ::SDL_WINDOW_MAXIMIZED,<br>  ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,<br>  ::SDL_WINDOW_ALLOW_HIGHDPI</li>
 </ul>
 <p>返回创建完成的窗口的ID。如果创建失败则返回0。</p>
 <p><strong>若要从Qt窗口创建一个SDL的子窗口，则利用QWidget的窗口id在构造函数中使用：</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDL_Window *window = SDL_CreateWindowFrom((<span class="keyword">void</span>\*)<span class="keyword">this</span>-&gt;winId())</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDL_Window *window = SDL_CreateWindowFrom((<span class="keyword">void</span>*)<span class="keyword">this</span>-&gt;winId())</span><br></pre></td></tr></table></figure>
 <h1 id="基于窗口创建渲染器（Render）"><a href="#基于窗口创建渲染器（Render）" class="headerlink" title="基于窗口创建渲染器（Render）"></a>基于窗口创建渲染器（Render）</h1><p>有了窗口后。我们需要创建渲染上下文，该上下文中一方面存放着要渲染的目标，也就是windows窗口；另一方面是存放着一个缓冲区，该缓冲区用于存放渲染的内容。缓冲区包括SDL_Surface和SDL_Texture，前者存放的像素数据，后者存放的是图像的某种描述信息，借助别的手段实现与前者相近的绘制，而且效率更高。</p>
 <p>使用SDL_CreateRenderer()基于窗口创建渲染器。SDL_CreateRenderer()原型如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_Renderer * SDLCALL <span class="title">SDL_CreateRenderer</span><span class="params">(SDL_Window * window,</span></span></span><br><span class="line"><span class="function"><span class="params">                                               <span class="keyword">int</span> index, Uint32 flags)</span></span>;</span><br></pre></td></tr></table></figure>
@@ -457,7 +455,7 @@
 <li>pitch：一行像素数据的字节数。</li>
 </ul>
 <p>成功的话返回0，失败的话返回-1。</p>
-<p>官方文档说该函数较慢，旨在用于不经常更改的静态纹理。如果要经常更新纹理，则最好将纹理创建为流式传输(SDL_TEXTUREACCESS_STREAMING)并使用下面的锁定函数以进行<strong>只写</strong>像素访问。(用OPENGL好像有bug，Directx正常)</p>
+<p>官方文档说该函数较慢，旨在用于不经常更改的静态纹理。如果要经常更新纹理，则最好将纹理创建为流式传输(SDL_TEXTUREACCESS_STREAMING)并使用下面的锁定函数以进行<strong>只写</strong>像素访问。(用openglL好像有bug，Direct3D正常)</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_LockTexture</span><span class="params">(SDL_Texture*    texture,</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="keyword">const</span> SDL_Rect* rect,</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="keyword">void</span>**          pixels,</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="keyword">int</span>*            pitch)</span></span></span><br></pre></td></tr></table></figure>
 <p>成功时返回0，如果纹理无效或未使用SDL_TEXTUREACCESS_STREAMING创建，则返回负的错误代码。其中可用于编辑的像素不一定需要包含旧纹理数据。</p>
 <p>配对的函数用于解锁纹理，并将更改上传到视频内存：</p>
