@@ -83,11 +83,11 @@
 <meta name="keywords" content="Video,FFmpeg">
 <meta property="og:type" content="article">
 <meta property="og:title" content="FFMpeg基本知识">
-<meta property="og:url" content="http://yoursite.com/2018/09/22/FFMpeg基本知识/index.html">
+<meta property="og:url" content="http://yoursite.com/2018/09/22/FFmpeg基本知识/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFmpeg最常用的结构体">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-23T01:38:23.500Z">
+<meta property="og:updated_time" content="2018-09-23T07:30:20.121Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FFMpeg基本知识">
 <meta name="twitter:description" content="鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFmpeg最常用的结构体">
@@ -120,7 +120,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/09/22/FFMpeg基本知识/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/09/22/FFmpeg基本知识/"/>
 
 
 
@@ -274,7 +274,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/22/FFMpeg基本知识/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/22/FFmpeg基本知识/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Regent Tsui">
@@ -449,7 +449,7 @@
 <li>循环调用函数：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">av_read_frame(AVFormatContext *s, AVPacket *pkt)</span><br></pre></td></tr></table></figure>
-<p>该函数从视频流中读取一个数据包 packet，把它存储在 AVPacket 数据结构中。其中packet.data这个指针会指向这些数据，而这些数据占用的内存需要通过av_packet_unref()函数来释放，即该packet出现问题时需要释放内存才能继续下一packet的读取。</p>
+<p>该函数从流中读取一个数据包packet，把它存储在 AVPacket 数据结构中。其中packet.data这个指针会指向这些数据，而这些数据占用的内存需要通过av_packet_unref()函数来释放，即该packet出现问题时需要释放内存才能继续下一packet的读取。</p>
 <p>然后在循环中先调用avcodec_send_packet(AVCodecContext <em>avctx, const AVPacket </em>avpkt)发送</p>
 <p>再调用avcodec_receive_frame(AVCodecContext <em>avctx, AVFrame </em>frame)接收。</p>
 <p>如果发送函数报AVERROR(EAGAIN)的错，表示已发送的AVPacket还没有被接收，不允许发送新的AVPacket。如果是接收函数报这个错，表示没有新的AVPacket可以接收，需要先发送AVPacket才能执行这个函数。而如果报AVERROR_EOF的错，在以上4个函数中都表示编解码器处于已经刷新完成的状态，没有数据可以进行发送和接收操作。</p>
@@ -457,7 +457,7 @@
 <li>最后释放内存</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">avcodec_free_context(*AVCodecContext);</span><br><span class="line">av_frame_free(&amp;frame);</span><br><span class="line">av_packet_free(&amp;pkt);</span><br><span class="line">avformat_close_input(&amp;fmt_ctx);</span><br></pre></td></tr></table></figure>
-<h1 id="图像数据内存分配与释放"><a href="#图像数据内存分配与释放" class="headerlink" title="图像数据内存分配与释放"></a>图像数据内存分配与释放</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_get_buffer_size</span> <span class="params">(<span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> align)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="图像-音频数据内存分配与释放"><a href="#图像-音频数据内存分配与释放" class="headerlink" title="图像/音频数据内存分配与释放"></a>图像/音频数据内存分配与释放</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_get_buffer_size</span> <span class="params">(<span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> align)</span></span></span><br></pre></td></tr></table></figure>
 <p>返回对应图像格式和大小的图像所占的字节数，最后一个参数是内存对齐的对齐数，也就是按多大的字节进行内存对齐。比如设置为1，表示按1字节对齐，那么得到的结果就是与实际的内存大小一样。再比如设置为4，表示按4字节对齐。也就是内存的起始地址必须是4的整倍数。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">av_malloc</span><span class="params">(<span class="keyword">size_t</span> size)</span></span></span><br></pre></td></tr></table></figure>
 <p>申请指定字节数的内存，返回相应的指针，NULL表示分配内存失败。</p>
@@ -475,24 +475,30 @@
 <p><strong>通常上面三个函数一起调用。或者用下面的一步到位的简化函数：</strong></p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_alloc</span><span class="params">(<span class="keyword">uint8_t</span> *pointers[<span class="number">4</span>], <span class="keyword">int</span> linesizes[<span class="number">4</span>],<span class="keyword">int</span> w, <span class="keyword">int</span> h, <span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> align)</span></span>;</span><br></pre></td></tr></table></figure>
 <ul>
-<li>pointers[4]：保存图像通道的地址。如果是RGB，则前三个指针分别指- R,G,B的内存地址。第四个指针保留不用。</li>
-<li>linesizes[4]：保存图像每个通道的内存对齐的步长，即一行的对齐内- 的宽度，此值大小在planar图像中等于图像宽度。</li>
+<li>pointers[4]：保存图像通道的地址。如果是RGB，则前三个指针分别指向R,G,B的内存地址。第四个指针保留不用。</li>
+<li>linesizes[4]：保存图像每个通道的内存对齐的步长，即一行的对齐内容的宽度，此值大小在planar图像中等于图像宽度。</li>
 <li>w:  要申请内存的图像宽度。</li>
 <li>h:  要申请内存的图像高度。</li>
 <li>pix_fmt: 要申请内存的图像的像素格式。</li>
 <li>align: 用于内存对齐的值。一般为1。</li>
 <li>返回值：所申请的内存空间的总大小。如果是负值，表示申请失败。</li>
 </ul>
+<p><strong>同样，音频也有上述类似的函数：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_samples_get_buffer_size</span><span class="params">(<span class="keyword">int</span> *linesize, <span class="keyword">int</span> nb_channels, <span class="keyword">int</span> nb_samples,</span></span></span><br><span class="line"><span class="function"><span class="params">                               <span class="keyword">enum</span> AVSampleFormat sample_fmt, <span class="keyword">int</span> align)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>linesize是函数里面计算出来的，可以传NULL。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_samples_fill_arrays</span><span class="params">(<span class="keyword">uint8_t</span> **audio_data, <span class="keyword">int</span> *linesize,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">const</span> <span class="keyword">uint8_t</span> *buf,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">int</span> nb_channels, <span class="keyword">int</span> nb_samples,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">enum</span> AVSampleFormat sample_fmt, <span class="keyword">int</span> align)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_samples_alloc</span><span class="params">(<span class="keyword">uint8_t</span> **audio_data, <span class="keyword">int</span> *linesize, <span class="keyword">int</span> nb_channels,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">int</span> nb_samples, <span class="keyword">enum</span> AVSampleFormat sample_fmt, <span class="keyword">int</span> align)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>audio_data：保存音频通道的地址，也有planar和pack之分。</li>
+<li>linesize：允许为NULL。</li>
+</ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">av_freep</span><span class="params">(<span class="keyword">void</span> *ptr)</span></span></span><br></pre></td></tr></table></figure>
 <p>释放指针并置为NULL，上面分配的dst_data[4]/pointers[4]最后要用此函数释放。当然也可以定义一个AVframe，用其相应的结构承载内存，最后由av_frame_free(&amp;frame)负责释放</p>
-<h1 id="图片像素数据处理libswscale"><a href="#图片像素数据处理libswscale" class="headerlink" title="图片像素数据处理libswscale"></a>图片像素数据处理libswscale</h1><p>该库可以改变图像尺寸，转换像素格式等，总体流程是：</p>
+<h1 id="图像转换libswscale"><a href="#图像转换libswscale" class="headerlink" title="图像转换libswscale"></a>图像转换libswscale</h1><p>该库可以改变图像尺寸，转换像素格式等，当对解码后的图像进行保存或显示的时候需要用到，因为图像原格式并不一定适合存储或用SDL播放。总体流程是：</p>
 <ol>
-<li><p>sws_getContext()：初始化一个SwsContext。</p>
-</li>
-<li><p>sws_scale()：处理图像数据。</p>
-</li>
-<li><p>sws_freeContext()：释放一个SwsContext。</p>
-</li>
+<li>sws_getContext()：初始化一个SwsContext。</li>
+<li>sws_scale()：处理图像数据。</li>
+<li>sws_freeContext()：释放一个SwsContext。</li>
 </ol>
 <h2 id="具体"><a href="#具体" class="headerlink" title="具体"></a>具体</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">struct SwsContext *<span class="title">sws_getContext</span><span class="params">(<span class="keyword">int</span> srcW, <span class="keyword">int</span> srcH, <span class="keyword">enum</span> AVPixelFormat srcFormat,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">int</span> dstW, <span class="keyword">int</span> dstH, <span class="keyword">enum</span> AVPixelFormat dstFormat,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">int</span> flags, SwsFilter *srcFilter,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  SwsFilter *dstFilter, <span class="keyword">const</span> <span class="keyword">double</span> *param)</span></span></span><br></pre></td></tr></table></figure>
 <ul>
@@ -507,6 +513,32 @@
 <li>int srcSliceH：需要扫描多少行，通常为输入图像数据的高度；</li>
 <li>返回输出图像高度。</li>
 </ul>
+<h1 id="音频转换libswresample"><a href="#音频转换libswresample" class="headerlink" title="音频转换libswresample"></a>音频转换libswresample</h1><p>该库可以转换音频格式，当对解码后的音频进行保存或播放的时候需要用到，因为音频原格式并不一定适合存储或用SDL播放(比如SDL播放音频不支持平面格式)。总体流程是：</p>
+<ol>
+<li>创建SwrContext，并设置转换所需的参数：通道数量、channel layout、sample rate。</li>
+<li>设置了所有参数后，用swr_init(struct SwrContext *)初始化</li>
+<li>调用swr_convert()进行转换。</li>
+<li>swr_free()释放上下文。</li>
+</ol>
+<h2 id="具体-1"><a href="#具体-1" class="headerlink" title="具体"></a>具体</h2><p>使用swr_alloc_set_opts设置SwrContext:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SwrContext *swr = swr_alloc_set_opts(<span class="literal">NULL</span>,  <span class="comment">// 填NULL或者用swr_alloc()分配了内存的SwrContext</span></span><br><span class="line">                       AV_CH_LAYOUT_STEREO,  <span class="comment">// out_ch_layout</span></span><br><span class="line">                       AV_SAMPLE_FMT_S16,    <span class="comment">// out_sample_fmt</span></span><br><span class="line">                       <span class="number">44100</span>,                <span class="comment">//out_sample_rate</span></span><br><span class="line">                       AV_CH_LAYOUT_5POINT1, <span class="comment">// in_ch_layout</span></span><br><span class="line">                       AV_SAMPLE_FMT_FLTP,   <span class="comment">// in_sample_fmt</span></span><br><span class="line">                       <span class="number">48000</span>,                <span class="comment">// in_sample_rate</span></span><br><span class="line">                       <span class="number">0</span>,                    <span class="comment">// log_offset</span></span><br><span class="line">                       <span class="literal">NULL</span>);                <span class="comment">// log_ctx</span></span><br></pre></td></tr></table></figure>
+<p>上述两种方法设置的是将5.1声道，采样格式为AV_SAMPLE_FMT_FLTP，采样率为48KHz的音频转换为2声道，采样格式为AV_SAMPLE_FMT_S16，采样率为44.1KHz。</p>
+<p>其中的参数channel_layout是一个64位整数，每个值为1的位对应一个通道。在头文件channel_layout.h中为将每个通道定义了一个mask，一个channel_layout就是某些channel mask的组合。可以用以下函数根据channel_layout得到通道数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_get_channel_layout_nb_channels</span><span class="params">(<span class="keyword">uint64_t</span> channel_layout)</span></span></span><br></pre></td></tr></table></figure>
+<p>也可以根据通道数得到默认的channel_layout：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int64_t</span> av_get_default_channel_layout(<span class="keyword">int</span> nb_channels)</span><br></pre></td></tr></table></figure>
+<p>调用swr_convert进行转换</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">swr_convert</span><span class="params">(struct SwrContext *s, <span class="keyword">uint8_t</span> **out,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="keyword">int</span>    out_count, <span class="keyword">const</span> <span class="keyword">uint8_t</span> **in,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="keyword">int</span>    in_count)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>out：输出缓冲区。</li>
+<li>out_count：转换后每个通道的sample个数</li>
+<li>in：输入缓冲区，一般为(const uint8_t **)frame-&gt;data</li>
+<li>in_count：输入音频每个通道的sample个数，一般为frame-&gt;nb_samples</li>
+</ul>
+<p>其返回值为转换后每个通道的sample个数。</p>
+<p>转换后的sample个数的计算公式为：src_nb_samples * dst_sample_rate / src_sample_rate，其代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, frame-&gt;sample_rate) + frame-&gt;nb_samples, frame-&gt;sample_rate, frame-&gt;sample_rate, AVRounding(<span class="number">1</span>));</span><br></pre></td></tr></table></figure>
+<p>函数av_rescale_rnd是按照指定的舍入方式计算a * b / c 。<br>函数swr_get_delay得到输入sample和输出sample之间的延迟，并且其返回值的根据传入的第二个参数不同而不同。如果是输入的采样率，则返回值是输入sample个数；如果输入的是输出采样率，则返回值是输出sample个数。</p>
 <h1 id="时间戳timestamp"><a href="#时间戳timestamp" class="headerlink" title="时间戳timestamp"></a>时间戳timestamp</h1><p>时间戳是以时间基(timebase)为单位的具体时间表示，有PTS和DTS两种，一般在有B帧编码的情况下两者都会用到，没有B帧时，两者一般保持一样。</p>
 <ul>
 <li>DTS（Decoding Time Stamp）：即解码时间戳，这个时间戳的意义在于告诉播放器该在什么时候解码这一帧的数据。</li>
@@ -750,7 +782,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#FFmpeg最常用的结构体"><span class="nav-number">1.</span> <span class="nav-text">FFmpeg最常用的结构体</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解协议（http-rtsp-rtmp-mms）"><span class="nav-number">1.1.</span> <span class="nav-text">解协议（http,rtsp,rtmp,mms）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解封装（flv-avi-rmvb-mp4）"><span class="nav-number">1.2.</span> <span class="nav-text">解封装（flv,avi,rmvb,mp4）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解码（h264-mpeg2-aac-mp3）"><span class="nav-number">1.3.</span> <span class="nav-text">解码（h264,mpeg2,aac,mp3）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编解码数据"><span class="nav-number">1.4.</span> <span class="nav-text">编解码数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解码基本流程"><span class="nav-number">2.</span> <span class="nav-text">解码基本流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#详细："><span class="nav-number">2.1.</span> <span class="nav-text">详细：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图像数据内存分配与释放"><span class="nav-number">3.</span> <span class="nav-text">图像数据内存分配与释放</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图片像素数据处理libswscale"><span class="nav-number">4.</span> <span class="nav-text">图片像素数据处理libswscale</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#具体"><span class="nav-number">4.1.</span> <span class="nav-text">具体</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间戳timestamp"><span class="nav-number">5.</span> <span class="nav-text">时间戳timestamp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间基timebase"><span class="nav-number">6.</span> <span class="nav-text">时间基timebase</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#不同的时间基"><span class="nav-number">6.1.</span> <span class="nav-text">不同的时间基</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算"><span class="nav-number">6.2.</span> <span class="nav-text">计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几个含义"><span class="nav-number">6.3.</span> <span class="nav-text">几个含义</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#FFmpeg最常用的结构体"><span class="nav-number">1.</span> <span class="nav-text">FFmpeg最常用的结构体</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解协议（http-rtsp-rtmp-mms）"><span class="nav-number">1.1.</span> <span class="nav-text">解协议（http,rtsp,rtmp,mms）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解封装（flv-avi-rmvb-mp4）"><span class="nav-number">1.2.</span> <span class="nav-text">解封装（flv,avi,rmvb,mp4）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解码（h264-mpeg2-aac-mp3）"><span class="nav-number">1.3.</span> <span class="nav-text">解码（h264,mpeg2,aac,mp3）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编解码数据"><span class="nav-number">1.4.</span> <span class="nav-text">编解码数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解码基本流程"><span class="nav-number">2.</span> <span class="nav-text">解码基本流程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#详细："><span class="nav-number">2.1.</span> <span class="nav-text">详细：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图像-音频数据内存分配与释放"><span class="nav-number">3.</span> <span class="nav-text">图像/音频数据内存分配与释放</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#图像转换libswscale"><span class="nav-number">4.</span> <span class="nav-text">图像转换libswscale</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#具体"><span class="nav-number">4.1.</span> <span class="nav-text">具体</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#音频转换libswresample"><span class="nav-number">5.</span> <span class="nav-text">音频转换libswresample</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#具体-1"><span class="nav-number">5.1.</span> <span class="nav-text">具体</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间戳timestamp"><span class="nav-number">6.</span> <span class="nav-text">时间戳timestamp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#时间基timebase"><span class="nav-number">7.</span> <span class="nav-text">时间基timebase</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#不同的时间基"><span class="nav-number">7.1.</span> <span class="nav-text">不同的时间基</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算"><span class="nav-number">7.2.</span> <span class="nav-text">计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几个含义"><span class="nav-number">7.3.</span> <span class="nav-text">几个含义</span></a></li></ol></li></ol></div>
             
 
           </div>
