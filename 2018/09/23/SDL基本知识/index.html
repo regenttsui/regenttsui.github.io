@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Video,SDL," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
+<meta name="keywords" content="Video,SDL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SDL基本知识">
+<meta property="og:url" content="http://yoursite.com/2018/09/23/SDL基本知识/index.html">
+<meta property="og:site_name" content="Regent&#39;s Blog">
+<meta property="og:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-09-23T01:13:17.031Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SDL基本知识">
+<meta name="twitter:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/23/SDL基本知识/"/>
+
+
+
+
+
+  <title>SDL基本知识 | Regent's Blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/regenttsui"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Regent's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">萌新的杂货店</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/23/SDL基本知识/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Regent Tsui">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/25165069?s=400&u=03ba742cd35d3f1bde28035a736fae28e6178c3e&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Regent's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SDL基本知识</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-23T08:56:27+08:00">
+                2018-09-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/视频技术/" itemprop="url" rel="index">
+                    <span itemprop="name">视频技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFMpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。<br><a id="more"></a></p>
+<h1 id="使用SDL播放一个视频代码流程大体如下："><a href="#使用SDL播放一个视频代码流程大体如下：" class="headerlink" title="使用SDL播放一个视频代码流程大体如下："></a>使用SDL播放一个视频代码流程大体如下：</h1><ul>
+<li>初始化:<ul>
+<li>SDL_Init(): 初始化SDL</li>
+<li>SDL_CreateWindow(): 创建窗口（Window）。</li>
+<li>SDL_CreateRenderer(): 基于窗口创建渲染器（Render）。</li>
+<li>SDL_CreateTexture(): 创建纹理（Texture）。</li>
+</ul>
+</li>
+<li>循环渲染数据:<ul>
+<li>SDL_UpdateTexture(): 设置纹理的数据。</li>
+<li>SDL_RenderCopy(): 纹理复制给渲染器。</li>
+<li>SDL_RenderPresent(): 显示</li>
+</ul>
+</li>
+</ul>
+<h1 id="初始化SDL"><a href="#初始化SDL" class="headerlink" title="初始化SDL"></a>初始化SDL</h1><p>使用SDL_Init()初始化SDL。该函数可以确定希望激活的子系统。SDL_Init()函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> SDLCALL <span class="title">SDL_Init</span><span class="params">(Uint32 flags)</span></span></span><br></pre></td></tr></table></figure>
+<p>其中，flags可以取下列值：</p>
+<ul>
+<li>SDL_INIT_TIMER：定时器</li>
+<li>SDL_INIT_AUDIO：音频</li>
+<li>SDL_INIT_VIDEO：视频</li>
+<li>SDL_INIT_JOYSTICK：摇杆</li>
+<li>SDL_INIT_HAPTIC：触摸屏</li>
+<li>SDL_INIT_GAMECONTROLLER：游戏控制器</li>
+<li>SDL_INIT_EVENTS：事件</li>
+<li>SDL_INIT_NOPARACHUTE：不捕获关键信号（这个没研究过）</li>
+<li>SDL_INIT_EVERYTHING：包含上述所有选项</li>
+</ul>
+<p>有关SDL_Init()有一点需要注意：初始化的时候尽量只激活需要用到的子系统，而不要用SDL_INIT_EVERYTHING。因为有些情况下使用SDL_INIT_EVERYTHING会出现一些不可预知的问题。</p>
+<h1 id="创建窗口（Window）"><a href="#创建窗口（Window）" class="headerlink" title="创建窗口（Window）"></a>创建窗口（Window）</h1><p>使用SDL_CreateWindow()创建一个用于视频播放的窗口，这是一种逻辑上的窗口，必须经过渲染才能显示。SDL_CreateWindow()的原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_Window * SDLCALL <span class="title">SDL_CreateWindow</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *title,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                      <span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span> w,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                      <span class="keyword">int</span> h, Uint32 flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数含义如下:</p>
+<ul>
+<li>title ：窗口标题</li>
+<li>x     ：窗口位置x坐标。也可以设置为SDL_WINDOWPOS_CENTERED或- SDL_WINDOWPOS_UNDEFINED。</li>
+<li>y     ：窗口位置y坐标。同上。</li>
+<li>w     ：窗口的宽</li>
+<li>h     ：窗口的高</li>
+<li><p>flags ：支持下列标识。包括了窗口的是否最大化、最小化，能否调整边界等等属性。</p>
+<p>  ::SDL_WINDOW_FULLSCREEN,    ::SDL_WINDOW_OPENGL,<br>  ::SDL_WINDOW_HIDDEN,        ::SDL_WINDOW_BORDERLESS,<br>  ::SDL_WINDOW_RESIZABLE,     ::SDL_WINDOW_MAXIMIZED,<br>  ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,<br>  ::SDL_WINDOW_ALLOW_HIGHDPI</p>
+</li>
+</ul>
+<p>返回创建完成的窗口的ID。如果创建失败则返回0。</p>
+<p><strong>若要从Qt窗口创建一个SDL的子窗口，则利用QWidget的窗口id在构造函数中使用：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDL_Window *window = SDL_CreateWindowFrom((<span class="keyword">void</span>\*)<span class="keyword">this</span>-&gt;winId())</span><br></pre></td></tr></table></figure>
+<h1 id="基于窗口创建渲染器（Render）"><a href="#基于窗口创建渲染器（Render）" class="headerlink" title="基于窗口创建渲染器（Render）"></a>基于窗口创建渲染器（Render）</h1><p>有了窗口后。我们需要创建渲染上下文，该上下文中一方面存放着要渲染的目标，也就是windows窗口；另一方面是存放着一个缓冲区，该缓冲区用于存放渲染的内容。缓冲区包括SDL_Surface和SDL_Texture，前者存放的像素数据，后者存放的是图像的某种描述信息，借助别的手段实现与前者相近的绘制，而且效率更高。</p>
+<p>使用SDL_CreateRenderer()基于窗口创建渲染器。SDL_CreateRenderer()原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_Renderer * SDLCALL <span class="title">SDL_CreateRenderer</span><span class="params">(SDL_Window * window,</span></span></span><br><span class="line"><span class="function"><span class="params">                                               <span class="keyword">int</span> index, Uint32 flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数含义如下:</p>
+<ul>
+<li>window    ： 渲染的目标窗口。</li>
+<li>index         ：打算初始化的渲染设备的索引。设置“-1”则初始化默认的渲染设备。</li>
+<li>flags          ：支持以下值（位于SDL_RendererFlags定义中）<ul>
+<li>SDL_RENDERER_SOFTWARE ：使用软件渲染</li>
+<li>SDL_RENDERER_ACCELERATED ：使用硬件加速</li>
+<li>SDL_RENDERER_PRESENTVSYNC：和显示器的刷新率同步</li>
+<li>SDL_RENDERER_TARGETTEXTURE ：暂不明确</li>
+</ul>
+</li>
+</ul>
+<p>返回创建完成的渲染器的ID。如果创建失败则返回NULL。</p>
+<h1 id="基于渲染器创建纹理（Texture）"><a href="#基于渲染器创建纹理（Texture）" class="headerlink" title="基于渲染器创建纹理（Texture）"></a>基于渲染器创建纹理（Texture）</h1><p>使用SDL_CreateTexture()基于渲染器创建一个纹理。SDL_CreateTexture()的原型如下。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_Texture * SDLCALL <span class="title">SDL_CreateTexture</span><span class="params">(SDL_Renderer * renderer,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                        Uint32 format,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                        <span class="keyword">int</span> access, <span class="keyword">int</span> w,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                        <span class="keyword">int</span> h)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数的含义如下:</p>
+<ul>
+<li>renderer：目标渲染器。</li>
+<li>format      ：纹理的格式，即像素的各种属性集合。</li>
+<li>access      ：可以取以下值（定义位于SDL_TextureAccess中）<ul>
+<li>SDL_TEXTUREACCESS_STATIC         ：变化极少</li>
+<li>SDL_TEXTUREACCESS_STREAMING        ：变化频繁</li>
+<li>SDL_TEXTUREACCESS_TARGET       ：暂时没有理解</li>
+</ul>
+</li>
+<li>w               ：纹理的宽</li>
+<li>h                ：纹理的高</li>
+</ul>
+<p>创建成功则返回纹理的ID，失败返回0</p>
+<h1 id="循环显示画面"><a href="#循环显示画面" class="headerlink" title="循环显示画面"></a>循环显示画面</h1><h2 id="设置纹理的数据"><a href="#设置纹理的数据" class="headerlink" title="设置纹理的数据"></a>设置纹理的数据</h2><p>使用SDL_UpdateTexture()设置纹理的像素数据。SDL_UpdateTexture()的原型如下。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> SDLCALL <span class="title">SDL_UpdateTexture</span><span class="params">(SDL_Texture * texture,</span></span></span><br><span class="line"><span class="function"><span class="params">                                              <span class="keyword">const</span> SDL_Rect * rect,</span></span></span><br><span class="line"><span class="function"><span class="params">                                              <span class="keyword">const</span> <span class="keyword">void</span> *pixels, <span class="keyword">int</span> pitch)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数的含义如下:</p>
+<ul>
+<li>texture：目标纹理。</li>
+<li>rect：更新像素的矩形区域。设置为NULL的时候更新整个区域。</li>
+<li>pixels：像素数据。</li>
+<li>pitch：一行像素数据的字节数。</li>
+</ul>
+<p>成功的话返回0，失败的话返回-1。</p>
+<p>官方文档说该函数较慢，旨在用于不经常更改的静态纹理。如果要经常更新纹理，则最好将纹理创建为流式传输(SDL_TEXTUREACCESS_STREAMING)并使用下面的锁定函数以进行<strong>只写</strong>像素访问。(用OPENGL好像有bug，Directx正常)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_LockTexture</span><span class="params">(SDL_Texture*    texture,</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="keyword">const</span> SDL_Rect* rect,</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="keyword">void</span>**          pixels,</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="keyword">int</span>*            pitch)</span></span></span><br></pre></td></tr></table></figure>
+<p>成功时返回0，如果纹理无效或未使用SDL_TEXTUREACCESS_STREAMING创建，则返回负的错误代码。其中可用于编辑的像素不一定需要包含旧纹理数据。</p>
+<p>配对的函数用于解锁纹理，并将更改上传到视频内存：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_UnlockTexture</span><span class="params">(SDL_Texture* texture)</span></span></span><br></pre></td></tr></table></figure>
+<p><strong>不过实际上用于播放视频时并未发现SDL_UpdateTexture有速度上的问题。</strong></p>
+<h1 id="纹理复制给渲染目标"><a href="#纹理复制给渲染目标" class="headerlink" title="纹理复制给渲染目标"></a>纹理复制给渲染目标</h1><p>使用SDL_RenderCopy()将纹理数据复制给渲染目标。在使用SDL_RenderCopy()之前，可以使用SDL_RenderClear()先使用清空渲染目标。实际上视频播放的时候不使用SDL_RenderClear()也是可以的，因为视频的后一帧会完全覆盖前一帧。SDL_RenderClear()原型如下。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> SDLCALL <span class="title">SDL_RenderClear</span><span class="params">(SDL_Renderer * renderer)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数renderer用于指定渲染目标。</p>
+<p>SDL_RenderCopy()原型如下。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> SDLCALL <span class="title">SDL_RenderCopy</span><span class="params">(SDL_Renderer * renderer,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           SDL_Texture * texture,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">const</span> SDL_Rect * srcrect,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           <span class="keyword">const</span> SDL_Rect * dstrect)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数的含义如下:</p>
+<ul>
+<li>renderer：渲染目标。</li>
+<li>texture：输入纹理。</li>
+<li>srcrect：选择输入纹理的一块矩形区域作为输入。设置为NULL的时候整个纹- 理作为输入。</li>
+<li>dstrect：选择渲染目标的一块矩形区域作为输出。设置为NULL的时候整个渲染目标作为输出。</li>
+</ul>
+<p>成功的话返回0，失败的话返回-1。</p>
+<h1 id="显示"><a href="#显示" class="headerlink" title="显示"></a>显示</h1><p>使用SDL_RenderPresent()显示画面。SDL_RenderPresent()原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> SDLCALL <span class="title">SDL_RenderPresent</span><span class="params">(SDL_Renderer * renderer)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数renderer用于指定渲染目标。</p>
+<h1 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h1><p>几个常见的事件：</p>
+<ul>
+<li>SDL_WindowEvent : Window窗口相关的事件。</li>
+<li>SDL_KeyboardEvent : 键盘相关的事件。</li>
+<li>SDL_MouseMotionEvent : 鼠标移动相关的事件。</li>
+<li>SDL_QuitEvent : 退出事件。</li>
+<li>SDL_UserEvent : 用户自定义事件。</li>
+</ul>
+<p>SDL将所有事件都存放在一个队列中。所有对事件的操作，其实就是对队列的操作。常用的事件API：</p>
+<ul>
+<li><p>SDL_PollEvent: 将队列中的事件取出。由于不会阻塞，可能会占用较多的CPU资源，在对于游戏来说等实时处理多的情况下适用</p>
+</li>
+<li><p>SDL_WaitEvent: 当队列中有事件时，取出事件。否则处于阻塞状态，释放CPU。实时性处理不多时使用</p>
+</li>
+<li>SDL_WaitEventTimeout: 与SDL_WaitEvent的区别时，当到达超时时间后，退出- 阻塞状态。</li>
+<li>SDL_PeekEvent: 从队列中取出事件，但该事件不从队列中删除。</li>
+<li>SDL_PushEvent: 向队列中插入事件</li>
+</ul>
+<p>常见用法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">    SDL_Event event;</span><br><span class="line">    <span class="keyword">while</span> (SDL_PollEvent(&amp;event)) &#123;</span><br><span class="line">        <span class="comment">/* handle your event here */</span></span><br><span class="line">        <span class="keyword">switch</span>(event.type)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">case</span> SDL_QUIT:</span><br><span class="line">             <span class="keyword">break</span>;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* do some other stuff here -- draw your app, etc. */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上例的用法中内层循环不断取事件进行判断，外层循环使得队列为空后重新开始内存循环，由于SDL_PollEvent不阻塞，会造成CPU跑到100%，所以至少得在外层循环的最后delay一下，释放一下CPU。</p>
+<h1 id="销毁Texture"><a href="#销毁Texture" class="headerlink" title="销毁Texture"></a>销毁Texture</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_DestroyTexture</span><span class="params">(SDL_Texture* texture)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="消毁渲染上下文"><a href="#消毁渲染上下文" class="headerlink" title="消毁渲染上下文"></a>消毁渲染上下文</h1><p>释放渲染上下文相关的资源。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_DestroyRenderer</span><span class="params">(SDL_Renderer* renderer)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="销毁窗口"><a href="#销毁窗口" class="headerlink" title="销毁窗口"></a>销毁窗口</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_DestroyWindow</span><span class="params">(SDL_Window* window)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="退出SDL"><a href="#退出SDL" class="headerlink" title="退出SDL"></a>退出SDL</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_Quit</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="打印日志"><a href="#打印日志" class="headerlink" title="打印日志"></a>打印日志</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_Log</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="延时若干毫秒"><a href="#延时若干毫秒" class="headerlink" title="延时若干毫秒"></a>延时若干毫秒</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_Delay</span><span class="params">(Uint32 ms)</span></span></span><br></pre></td></tr></table></figure>
+<p>可用于控制帧率</p>
+<h1 id="创建线程"><a href="#创建线程" class="headerlink" title="创建线程"></a>创建线程</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_Thread* <span class="title">SDL_CreateThread</span><span class="params">(SDL_ThreadFunction fn,</span></span></span><br><span class="line"><span class="function"><span class="params">                         <span class="keyword">const</span> <span class="keyword">char</span>*        name,</span></span></span><br><span class="line"><span class="function"><span class="params">                         <span class="keyword">void</span>*              data)</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>fn: 线程要运行的函数。</li>
+<li>name: 线程名。</li>
+<li>data: 函数参数。</li>
+</ul>
+<h1 id="等待线程"><a href="#等待线程" class="headerlink" title="等待线程"></a>等待线程</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_WaitThread</span><span class="params">(SDL_Thread* thread,</span></span></span><br><span class="line"><span class="function"><span class="params">                <span class="keyword">int</span>*        status)</span></span></span><br></pre></td></tr></table></figure>
+<p>等待线程结束。</p>
+<h1 id="创建互斥量"><a href="#创建互斥量" class="headerlink" title="创建互斥量"></a>创建互斥量</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_mutex* <span class="title">SDL_CreateMutex</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="销毁互斥量"><a href="#销毁互斥量" class="headerlink" title="销毁互斥量"></a>销毁互斥量</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_DestroyMutex</span><span class="params">(SDL_mutex* mutex)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="加锁"><a href="#加锁" class="headerlink" title="加锁"></a>加锁</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_LockMutex</span><span class="params">(SDL_mutex* mutex)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="解锁"><a href="#解锁" class="headerlink" title="解锁"></a>解锁</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_UnlockMutex</span><span class="params">(SDL_mutex* mutex)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="音频"><a href="#音频" class="headerlink" title="音频"></a>音频</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">SDL_AudioSpec</span> &#123;</span></span><br><span class="line">	<span class="keyword">int</span> freq;		<span class="comment">/**&lt; DSP frequency -- samples per second */</span></span><br><span class="line">	Uint16 format;		<span class="comment">/**&lt; Audio data format */</span></span><br><span class="line">	Uint8  channels;	<span class="comment">/**&lt; Number of channels: 1 mono, 2 stereo */</span></span><br><span class="line">	Uint8  silence;		<span class="comment">/**&lt; Audio buffer silence value (calculated) */</span></span><br><span class="line">	Uint16 samples;		<span class="comment">/**&lt; Audio buffer size in samples (power of 2) */</span></span><br><span class="line">	Uint16 padding;		<span class="comment">/**&lt; Necessary for some compile environments */</span></span><br><span class="line">	Uint32 size;		<span class="comment">/**&lt; Audio buffer size in bytes (calculated) */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">void</span> (SDLCALL *callback)(<span class="keyword">void</span> *userdata, Uint8 *stream, <span class="keyword">int</span> len);</span><br><span class="line">	<span class="keyword">void</span>  *userdata;</span><br><span class="line">&#125; SDL_AudioSpec;</span><br></pre></td></tr></table></figure>
+<p>SDL_AudioSpec是包含音频输出格式的结构。它还包含一个回调(callback)，当音频设备需要更多数据时调用。</p>
+<ul>
+<li>freq: 指定了每秒向音频设备发送的sample数。常用的值为：11025，22050，44100。值越高质量越好。</li>
+<li>format: 指定了每个sample元素的大小和类型。一般用AUDIO_S16SYS，表示16位无符号，取决于系统大小端。</li>
+<li>channels 指定了声音的通道数：1（单声道）；2（立体声）。</li>
+<li>samples 这个值表示音频缓存区的大小（以sample计）。一个sample是一段大小为 format * channels 的音频数据。</li>
+<li>size： 这个值表示音频缓存区的大小（以byte计）。由打开设备的函数计算，不用传值。</li>
+<li>silence： 设置静音的值。由打开设备的函数计算，不用传值。</li>
+<li>padding： 考虑到兼容性的一个参数。</li>
+<li>userdata：程序特定的参数，传给callback。</li>
+<li>callback： 是获取音频数据后的回调函数，可以将解码获取的音频码流进行混音并输出到设备。callback的参数：<ul>
+<li>userdata：如上，一般传入解码器上下文AVCodecContext。</li>
+<li>stream：指向缓存区的指针，这个缓存区将被这个回调函数填满。回调函数必须填满该缓冲区，若没有声音可播放则应填满静音。一旦回调函数返回，缓冲区将不再有效。</li>
+<li>len：上面缓存区的大小（字节数）。</li>
+</ul>
+</li>
+</ul>
+<p>SDL_OpenAudioDevice和SDL_OpenAudio：均是打开特定的音频设备，SDL_OpenAudioDevice用于替代原来的SDL_OpenAudio。但是只能用来打开AudioDeviceID大于等于2的设备，而默认的设备，即AudioDeviceID等于1，仍然只能用SDL_OpenAudio函数打开：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_OpenAudio</span><span class="params">(SDL_AudioSpec* desired,</span></span></span><br><span class="line"><span class="function"><span class="params">                  SDL_AudioSpec* obtained)</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>desired：预先构造的期望的SDL_AudioSpec，以该参数打开设备。</li>
+<li>obtained：将实际硬件参数放在其中。如果为NULL，则传递给回调函数的音频数据将被保证为所请求的格式，如果需要的话，将自动转换为实际的硬件音频格式。如果获得的是NULL，那么desired会修改字段。</li>
+</ul>
+<p>成功返回0。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_PauseAudio</span><span class="params">(<span class="keyword">int</span> pause_on)</span></span></span><br></pre></td></tr></table></figure>
+<p>暂停音频设备，与SDL_OpenAudio配对。</p>
+<ul>
+<li>pause_on：非零值表示暂停, 0表示不暂停(播放)。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_CloseAudio</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br></pre></td></tr></table></figure>
+<p>关闭音频设备，与SDL_OpenAudio配对。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_MixAudio</span><span class="params">(Uint8*       dst,</span></span></span><br><span class="line"><span class="function"><span class="params">                  <span class="keyword">const</span> Uint8* src,</span></span></span><br><span class="line"><span class="function"><span class="params">                  Uint32       len,</span></span></span><br><span class="line"><span class="function"><span class="params">                  <span class="keyword">int</span>          volume)</span></span></span><br></pre></td></tr></table></figure>
+<p>混音，与SDL_OpenAudio配对。</p>
+<ul>
+<li>dst：放置混音结果，比如回调函数的stream。</li>
+<li>src：要混音的源音频缓冲区。</li>
+<li>len：上述缓冲区的字节数。</li>
+<li>volume：音量，0 - 128, 设置为SDL_MIX_MAXVOLUME可以获得完整的(100%)音量。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDL_memset( <span class="keyword">void</span> *dst, <span class="keyword">int</span> c, <span class="keyword">size_t</span> len)</span><br></pre></td></tr></table></figure>
+<p>大概是封装了一下memset，就是初始化某段内存的。可用于初始化SDL_AudioSpec和回调函数的stream。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Video/" rel="tag"># Video</a>
+          
+            <a href="/tags/SDL/" rel="tag"># SDL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/22/FFMpeg基本知识/" rel="next" title="FFMpeg基本知识">
+                <i class="fa fa-chevron-left"></i> FFMpeg基本知识
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/23/简单的纯视频播放器/" rel="prev" title="基于FFMpeg4.0+SDL2.0实现简单的纯视频播放器">
+                基于FFMpeg4.0+SDL2.0实现简单的纯视频播放器 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://avatars3.githubusercontent.com/u/25165069?s=400&u=03ba742cd35d3f1bde28035a736fae28e6178c3e&v=4"
+                alt="Regent Tsui" />
+            
+              <p class="site-author-name" itemprop="name">Regent Tsui</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#使用SDL播放一个视频代码流程大体如下："><span class="nav-number">1.</span> <span class="nav-text">使用SDL播放一个视频代码流程大体如下：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#初始化SDL"><span class="nav-number">2.</span> <span class="nav-text">初始化SDL</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#创建窗口（Window）"><span class="nav-number">3.</span> <span class="nav-text">创建窗口（Window）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基于窗口创建渲染器（Render）"><span class="nav-number">4.</span> <span class="nav-text">基于窗口创建渲染器（Render）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基于渲染器创建纹理（Texture）"><span class="nav-number">5.</span> <span class="nav-text">基于渲染器创建纹理（Texture）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#循环显示画面"><span class="nav-number">6.</span> <span class="nav-text">循环显示画面</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#设置纹理的数据"><span class="nav-number">6.1.</span> <span class="nav-text">设置纹理的数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#纹理复制给渲染目标"><span class="nav-number">7.</span> <span class="nav-text">纹理复制给渲染目标</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#显示"><span class="nav-number">8.</span> <span class="nav-text">显示</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#事件"><span class="nav-number">9.</span> <span class="nav-text">事件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#销毁Texture"><span class="nav-number">10.</span> <span class="nav-text">销毁Texture</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#消毁渲染上下文"><span class="nav-number">11.</span> <span class="nav-text">消毁渲染上下文</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#销毁窗口"><span class="nav-number">12.</span> <span class="nav-text">销毁窗口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#退出SDL"><span class="nav-number">13.</span> <span class="nav-text">退出SDL</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#打印日志"><span class="nav-number">14.</span> <span class="nav-text">打印日志</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#延时若干毫秒"><span class="nav-number">15.</span> <span class="nav-text">延时若干毫秒</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#创建线程"><span class="nav-number">16.</span> <span class="nav-text">创建线程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#等待线程"><span class="nav-number">17.</span> <span class="nav-text">等待线程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#创建互斥量"><span class="nav-number">18.</span> <span class="nav-text">创建互斥量</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#销毁互斥量"><span class="nav-number">19.</span> <span class="nav-text">销毁互斥量</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#加锁"><span class="nav-number">20.</span> <span class="nav-text">加锁</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解锁"><span class="nav-number">21.</span> <span class="nav-text">解锁</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#音频"><span class="nav-number">22.</span> <span class="nav-text">音频</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Regent Tsui</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
+<script type="text/javascript" src="/js/src/love.js"></script>

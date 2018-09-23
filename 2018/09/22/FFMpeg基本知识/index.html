@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta name="description" content="鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
 <meta name="keywords" content="Video,FFmpeg">
 <meta property="og:type" content="article">
 <meta property="og:title" content="FFMpeg基本知识">
 <meta property="og:url" content="http://yoursite.com/2018/09/22/FFMpeg基本知识/index.html">
 <meta property="og:site_name" content="Regent&#39;s Blog">
-<meta property="og:description" content="本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta property="og:description" content="鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-22T08:07:39.695Z">
+<meta property="og:updated_time" content="2018-09-23T01:22:47.447Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FFMpeg基本知识">
-<meta name="twitter:description" content="本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
+<meta name="twitter:description" content="鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFMPEG最常用的结构体">
 
 
 
@@ -368,12 +368,12 @@
       
 
       
-        <p>本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误)</p>
+        <p>鼎鼎大名的FFMpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFMpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误)</p>
 <h1 id="FFMPEG最常用的结构体"><a href="#FFMPEG最常用的结构体" class="headerlink" title="FFMPEG最常用的结构体"></a>FFMPEG最常用的结构体</h1><a id="more"></a>
 <h2 id="解协议（http-rtsp-rtmp-mms）"><a href="#解协议（http-rtsp-rtmp-mms）" class="headerlink" title="解协议（http,rtsp,rtmp,mms）"></a>解协议（http,rtsp,rtmp,mms）</h2><p>协议(文件)操作的顶层结构是AVIOContext，这个对象实现了带缓冲的读写操作；FFMPEG的输入对象AVFormat的pb字段指向一个AVIOContext。</p>
 <p>AVIOContext的opaque实际指向一个URLContext对象，这个对象封装了协议对象及协议操作对象，其中prot指向具体的协议操作对象，priv_data指向具体的协议对象。</p>
 <p>URLProtocol为协议操作对象，针对每种协议，会有一个这样的对象，每个协议操作对象和一个协议对象关联。</p>
-<p>注意：FFMPEG中文件也被当做一种协议：file</p>
+<p>注意：FFMPEG中文件也被当做一种协议：file。</p>
 <h2 id="解封装（flv-avi-rmvb-mp4）"><a href="#解封装（flv-avi-rmvb-mp4）" class="headerlink" title="解封装（flv,avi,rmvb,mp4）"></a>解封装（flv,avi,rmvb,mp4）</h2><p>AVFormatContext主要存储视音频封装格式中包含的信息；AVInputFormat存储输入视音频使用的封装格式。每种视音频封装格式都对应一个AVInputFormat结构。</p>
 <h2 id="解码（h264-mpeg2-aac-mp3）"><a href="#解码（h264-mpeg2-aac-mp3）" class="headerlink" title="解码（h264,mpeg2,aac,mp3）"></a>解码（h264,mpeg2,aac,mp3）</h2><p>每个AVStream存储一个视频/音频流的相关数据；每个AVStream对应一个AVCodecContext，存储该视频/音频流使用解码方式的相关数据；每个AVCodecContext中对应一个AVCodec，包含该视频/音频对应的解码器。每种解码器都对应一个AVCodec结构。</p>
 <h2 id="编解码数据"><a href="#编解码数据" class="headerlink" title="编解码数据"></a>编解码数据</h2><p>视频每个Packet是一帧；音频每个Packet可能包含若干帧。</p>
@@ -392,24 +392,24 @@
 <li>创建AVFormatContext，用以管理文件的输入输出，可以直接赋予空指针，然后由后续函数分配内存：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVFormatContext *fmt_ctx = <span class="literal">NULL</span>;</span><br></pre></td></tr></table></figure>
-<pre><code>也可以用函数分配内存：
-</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVFormatContext *fmt_ctx = avformat_alloc_context();</span><br></pre></td></tr></table></figure>
+<p>也可以用函数分配内存：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVFormatContext *fmt_ctx = avformat_alloc_context();</span><br></pre></td></tr></table></figure>
 <ol start="2">
 <li>然后用以下函数打开输入：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avformat_open_input(AVFormatContext **ps, <span class="keyword">const</span> <span class="keyword">char</span> *url, AVInputFormat *fmt, AVDictionary **options)</span><br></pre></td></tr></table></figure>
-<pre><code>该函数会读取媒体文件的文件头并将文件格式相关的信息存储在我们作为第一个参数传入的AVFormatContext中。第二个参数为视频地址，这个可以是本地视频文件地址，也可以是视频流地址。第三个参数用于指定媒体文件格式，第四个参数是文件格式相关选项。如果后面这两个参数传入的是NULL，那么 libavformat 将自动探测文件格式。如果文件打开失败，返回值为负值，要调用avformat_free_context()及时释放掉AVFormatContext(好像会自动释放？)。如果打开成功，返回值为0，且等到后面不再需要输入文件的操作时，要调用avformat_close_input(AVFormatContext **s)来关闭输入。
-</code></pre><ol start="3">
+<p>该函数会读取媒体文件的文件头并将文件格式相关的信息存储在我们作为第一个参数传入的AVFormatContext中。第二个参数为视频地址，这个可以是本地视频文件地址，也可以是视频流地址。第三个参数用于指定媒体文件格式，第四个参数是文件格式相关选项。如果后面这两个参数传入的是NULL，那么 libavformat 将自动探测文件格式。如果文件打开失败，返回值为负值，要调用avformat_free_context()及时释放掉AVFormatContext(好像会自动释放？)。如果打开成功，返回值为0，且等到后面不再需要输入文件的操作时，要调用avformat_close_input(AVFormatContext **s)来关闭输入。</p>
+<ol start="3">
 <li>接着需要将视音频流的信息读取到AVFormatContext，AVFormatContext中有信息，才能进行查找视频流、音频流及相应的解码器的操作：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options)</span><br></pre></td></tr></table></figure>
-<pre><code>第二个参数一般填NULL。返回值&gt;=0表示成功。
-</code></pre><ol start="4">
+<p>第二个参数一般填NULL。返回值&gt;=0表示成功。</p>
+<ol start="4">
 <li>调试函数:</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">av_dump_format(AVFormatContext *ic,<span class="keyword">int</span> index,<span class="keyword">const</span> <span class="keyword">char</span> *url,<span class="keyword">int</span> is_output)</span><br></pre></td></tr></table></figure>
-<pre><code>可以为我们打印 AVFormatContext 中都有哪些信息。url是文件，index和output一般填0。AVFormatContext 里包含了下面这些跟媒体信息有关的成员：
-</code></pre><ul>
+<p>可以为我们打印 AVFormatContext 中都有哪些信息。url是文件，index和output一般填0。AVFormatContext 里包含了下面这些跟媒体信息有关的成员：</p>
+<ul>
 <li>struct AVInputFormat *iformat：输入数据的封装格式</li>
 <li>AVIOContext *pb：输入数据的缓存</li>
 <li>unsigned int nb_streams：视音频流的个数</li>
@@ -423,8 +423,8 @@
 <li>接下来需要初始化视音频的AVCodec(解码器)和AVCodecContext(解码器上下文)。注意，这里音频的AVCodec和AVCodecContext和视频的是分开的，但是它们的流程是一模一样的。首先根据类型找到音频或视频的序号，并在同时匹配到最适合的解码器：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> streamIndex = av_find_best_stream(AVFormatContext *ic,</span><br><span class="line">                        <span class="keyword">enum</span> AVMediaType type,</span><br><span class="line">                        <span class="keyword">int</span> wanted_stream_nb,</span><br><span class="line">                        <span class="keyword">int</span> related_stream,</span><br><span class="line">                        AVCodec **decoder_ret,</span><br><span class="line">                        <span class="keyword">int</span> flags);</span><br></pre></td></tr></table></figure>
-<pre><code>AVMediaType是AVMEDIA_TYPE_VIDEO或AVMEDIA_TYPE_AUDIO，wanted_stream_nb和related_stream传-1。decoder_ret传入一个新建的AVCodec *codec，这样可以直接将查找到的解码器填充进去，当然有可能查找失败，所以应该判断一下codec是否为NULL。flags传0。函数返回值为相应流的序号，负值代表失败。
-</code></pre><ol start="6">
+<p>AVMediaType是AVMEDIA_TYPE_VIDEO或AVMEDIA_TYPE_AUDIO，wanted_stream_nb和related_stream传-1。decoder_ret传入一个新建的AVCodec *codec，这样可以直接将查找到的解码器填充进去，当然有可能查找失败，所以应该判断一下codec是否为NULL。flags传0。函数返回值为相应流的序号，负值代表失败。</p>
+<ol start="6">
 <li>通过序号就能找到视频流或者音频流：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVStream *stream = fmt_ctx-&gt;streams[streamIndex];</span><br></pre></td></tr></table></figure>
@@ -432,31 +432,28 @@
 <li>接下来通过匹配到的解码器创建AVCodecContext(解码器上下文)并把视/音频流里的参数传到视/音频解码器中：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVCodecContext *codecContext = avcodec_alloc_context3(codec);</span><br></pre></td></tr></table></figure>
-<pre><code>codecContext为NULL表示失败。
-</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avcodec_parameters_to_context(codecContext, stream-&gt;codecpar);</span><br></pre></td></tr></table></figure>
-<pre><code>返回负值表示失败。
-</code></pre><ol start="8">
+<p>codecContext为NULL表示失败。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avcodec_parameters_to_context(codecContext, stream-&gt;codecpar);</span><br></pre></td></tr></table></figure>
+<p>返回负值表示失败。</p>
+<ol start="8">
 <li>接下来就可以打开解码器上下文准备进行解码操作了：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">avcodec_open2(AVCodecContext *avctx, <span class="keyword">const</span> AVCodec *codec, AVDictionary **options)</span><br></pre></td></tr></table></figure>
-<pre><code>最后一个参数填NULL，返回负值表示失败。
-</code></pre><ol start="9">
+<p>最后一个参数填NULL，返回负值表示失败。</p>
+<ol start="9">
 <li>分配AVPacket和AVFrame的内存:</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVPacket *pkt = av_packet_alloc();AVFrame *frame = av_frame_alloc();</span><br></pre></td></tr></table></figure>
-<pre><code>这两个语句分配的内存不包括存储数据的部分，失败时返回NULL。
-</code></pre><ol start="10">
+<p>这两个语句分配的内存不包括存储数据的部分，失败时返回NULL。</p>
+<ol start="10">
 <li>循环调用函数：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">av_read_frame(AVFormatContext *s, AVPacket *pkt)</span><br></pre></td></tr></table></figure>
-<pre><code>该函数从视频流中读取一个数据包 packet，把它存储在 AVPacket 数据结构中。其中packet.data这个指针会指向这些数据，而这些数据占用的内存需要通过av_packet_unref()函数来释放，即该packet出现问题时需要释放内存才能继续下一packet的读取。
-
-然后在循环中先调用avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt)发送
-
-再调用avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame)接收。
-
-如果发送函数报AVERROR(EAGAIN)的错，表示已发送的AVPacket还没有被接收，不允许发送新的AVPacket。如果是接收函数报这个错，表示没有新的AVPacket可以接收，需要先发送AVPacket才能执行这个函数。而如果报AVERROR_EOF的错，在以上4个函数中都表示编解码器处于已经刷新完成的状态，没有数据可以进行发送和接收操作。
-</code></pre><ol start="11">
+<p>该函数从视频流中读取一个数据包 packet，把它存储在 AVPacket 数据结构中。其中packet.data这个指针会指向这些数据，而这些数据占用的内存需要通过av_packet_unref()函数来释放，即该packet出现问题时需要释放内存才能继续下一packet的读取。</p>
+<p>然后在循环中先调用avcodec_send_packet(AVCodecContext <em>avctx, const AVPacket </em>avpkt)发送</p>
+<p>再调用avcodec_receive_frame(AVCodecContext <em>avctx, AVFrame </em>frame)接收。</p>
+<p>如果发送函数报AVERROR(EAGAIN)的错，表示已发送的AVPacket还没有被接收，不允许发送新的AVPacket。如果是接收函数报这个错，表示没有新的AVPacket可以接收，需要先发送AVPacket才能执行这个函数。而如果报AVERROR_EOF的错，在以上4个函数中都表示编解码器处于已经刷新完成的状态，没有数据可以进行发送和接收操作。</p>
+<ol start="11">
 <li>最后释放内存</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">avcodec_free_context(*AVCodecContext);</span><br><span class="line">av_frame_free(&amp;frame);</span><br><span class="line">av_packet_free(&amp;pkt);</span><br><span class="line">avformat_close_input(&amp;fmt_ctx);</span><br></pre></td></tr></table></figure>
@@ -473,10 +470,9 @@
 <li>pix_fmt: [in] 申请 src内存时的像素格式。</li>
 <li>width: [in]申请src内存时指定的宽度。</li>
 <li>height: [in]申请scr内存时指定的高度。</li>
-<li><p>align: [in]申请src内存时指定的对齐字节数。</p>
-<p> <strong>通常上面三个函数一起调用。或者用下面的一步到位的简化函数</strong></p>
-</li>
+<li>align: [in]申请src内存时指定的对齐字节数。</li>
 </ul>
+<p><strong>通常上面三个函数一起调用。或者用下面的一步到位的简化函数：</strong></p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_alloc</span><span class="params">(<span class="keyword">uint8_t</span> *pointers[<span class="number">4</span>], <span class="keyword">int</span> linesizes[<span class="number">4</span>],<span class="keyword">int</span> w, <span class="keyword">int</span> h, <span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> align)</span></span>;</span><br></pre></td></tr></table></figure>
 <ul>
 <li>pointers[4]：保存图像通道的地址。如果是RGB，则前三个指针分别指- R,G,B的内存地址。第四个指针保留不用。</li>
@@ -505,7 +501,7 @@
 </ul>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sws_scale</span><span class="params">(struct SwsContext *c, <span class="keyword">const</span> <span class="keyword">uint8_t</span> *<span class="keyword">const</span> srcSlice[],</span></span></span><br><span class="line"><span class="function"><span class="params">              <span class="keyword">const</span> <span class="keyword">int</span> srcStride[], <span class="keyword">int</span> srcSliceY, <span class="keyword">int</span> srcSliceH,</span></span></span><br><span class="line"><span class="function"><span class="params">              <span class="keyword">uint8_t</span> *<span class="keyword">const</span> dst[], <span class="keyword">const</span> <span class="keyword">int</span> dstStride[])</span></span>;</span><br></pre></td></tr></table></figure>
 <ul>
-<li>const uint8_t <em>const srcSlice[]，uint8_t </em>const dst[]：输输出图像数据各颜色通道的buffer指针数组；</li>
+<li>const uint8_t *const srcSlice[]，uint8_t *const dst[]：输输出图像数据各颜色通道的buffer指针数组；</li>
 <li>const int srcStride[]，const int dstStride[]：输入输出图像据各颜色通道每行存储的字节数数组；</li>
 <li>int srcSliceY：从输入图像数据的第多少列开始逐行扫描，通常设0；</li>
 <li>int srcSliceH：需要扫描多少行，通常为输入图像数据的高度；</li>
@@ -616,6 +612,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2018/09/23/SDL基本知识/" rel="prev" title="SDL基本知识">
+                SDL基本知识 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -695,7 +695,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">9</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -717,7 +717,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

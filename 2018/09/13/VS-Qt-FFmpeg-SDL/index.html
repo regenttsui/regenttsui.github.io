@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Video,FFmpeg,Qt," />
+  <meta name="keywords" content="Video,FFmpeg,Qt,SDL," />
 
 
 
@@ -80,7 +80,7 @@
 
 
 <meta name="description" content="本文主要记录一下在VS2017如何配置Qt、FFmpeg和SDL，以便于后续在VS上进行相关的开发。前提：已经安装好了VS2017，本人系统Win10。">
-<meta name="keywords" content="Video,FFmpeg,Qt">
+<meta name="keywords" content="Video,FFmpeg,Qt,SDL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VS2017+Qt+FFmpeg+SDL配置">
 <meta property="og:url" content="http://yoursite.com/2018/09/13/VS-Qt-FFmpeg-SDL/index.html">
@@ -88,7 +88,7 @@
 <meta property="og:description" content="本文主要记录一下在VS2017如何配置Qt、FFmpeg和SDL，以便于后续在VS上进行相关的开发。前提：已经安装好了VS2017，本人系统Win10。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://raw.githubusercontent.com/regenttsui/blogpictures/master/VS%2BQt/Qt.jpg">
-<meta property="og:updated_time" content="2018-09-17T01:53:13.412Z">
+<meta property="og:updated_time" content="2018-09-23T01:24:03.183Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="VS2017+Qt+FFmpeg+SDL配置">
 <meta name="twitter:description" content="本文主要记录一下在VS2017如何配置Qt、FFmpeg和SDL，以便于后续在VS上进行相关的开发。前提：已经安装好了VS2017，本人系统Win10。">
@@ -394,7 +394,7 @@
 <li>对于动态链接库，可以把lib\x64或\x86添加到系统环境变量PATH中，也可以直接把SDL2.dll复制到项目生成exe文件同目录下，反正只有一个dll。</li>
 </ol>
 <h1 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h1><p>至此已经大功告成，测试程序如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;QtWidgets/QApplication&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;SDL.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;libavformat/avformat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;libavcodec/avcodec.h&gt;</span></span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	SDL_Init(SDL_INIT_EVERYTHING);  </span><br><span class="line">	SDL_Quit();</span><br><span class="line"></span><br><span class="line">	av_register_all();</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">char</span> *path = <span class="string">"test.mp4"</span>;</span><br><span class="line">	AVFormatContext *ac = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">int</span> re = avformat_open_input(&amp;ac, path, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	avformat_close_input(&amp;ac);</span><br><span class="line"></span><br><span class="line">	<span class="function">QApplication <span class="title">a</span><span class="params">(argc, argv)</span></span>;</span><br><span class="line">	SimplePlayer w;</span><br><span class="line">	w.show();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> a.exec();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;QtWidgets/QApplication&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;SDL.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;libavformat/avformat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;libavcodec/avcodec.h&gt;</span></span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	SDL_Init(SDL_INIT_EVERYTHING);  </span><br><span class="line">	SDL_Quit();</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">char</span> *path = <span class="string">"test.mp4"</span>;</span><br><span class="line">	AVFormatContext *ac = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">int</span> re = avformat_open_input(&amp;ac, path, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	avformat_close_input(&amp;ac);</span><br><span class="line"></span><br><span class="line">	<span class="function">QApplication <span class="title">a</span><span class="params">(argc, argv)</span></span>;</span><br><span class="line">	SimplePlayer w;</span><br><span class="line">	w.show();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> a.exec();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
     
@@ -416,6 +416,8 @@
             <a href="/tags/FFmpeg/" rel="tag"># FFmpeg</a>
           
             <a href="/tags/Qt/" rel="tag"># Qt</a>
+          
+            <a href="/tags/SDL/" rel="tag"># SDL</a>
           
         </div>
       
@@ -521,7 +523,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">9</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -543,7 +545,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
