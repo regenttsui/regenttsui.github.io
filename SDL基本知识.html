@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-27T11:06:17.298Z">
+<meta property="og:updated_time" content="2018-10-13T08:16:41.232Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="SDL基本知识">
 <meta name="twitter:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
@@ -491,15 +491,21 @@
 </ul>
 <p>SDL将所有事件都存放在一个队列中。所有对事件的操作，其实就是对队列的操作。常用的事件API：</p>
 <ul>
-<li><p>SDL_PollEvent: 将队列中的事件取出。由于不会阻塞，可能会占用较多的CPU资源，在对于游戏来说等实时处理多的情况下适用</p>
-</li>
-<li><p>SDL_WaitEvent: 当队列中有事件时，取出事件。否则处于阻塞状态，释放CPU。实时性处理不多时使用</p>
-</li>
+<li>SDL_PollEvent: 将队列中的事件取出。由于不会阻塞，可能会占用较多的CPU资源，在对于游戏来说等实时处理多的情况下适用。</li>
+<li>SDL_WaitEvent: 当队列中有事件时，取出事件。否则处于阻塞状态，释放CPU。实时性处理不多时使用。</li>
 <li>SDL_WaitEventTimeout: 与SDL_WaitEvent的区别时，当到达超时时间后，退出- 阻塞状态。</li>
-<li>SDL_PeekEvent: 从队列中取出事件，但该事件不从队列中删除。</li>
-<li>SDL_PushEvent: 向队列中插入事件</li>
+<li>SDL_PumpEvents：从设备收集所有挂起的输入信息并将其放入事件队列中。如果不调用SDL_PumpEvents，则不会在队列上放置任何事件。SDL_PollEvent和SDL_WaitEvent会隐式调用SDL_PumpEvents。但是，如果没有使用上述两个函数轮询或等待事件，则必须调用SDL_PumpEvents以强制更新事件队列。</li>
+<li>SDL_PushEvent: 向队列中插入事件。</li>
+<li>SDL_PeekEvent: 检查事件队列中的消息，并可选地返回它们。原型如下：</li>
 </ul>
-<p>常见用法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_PeepEvents</span><span class="params">(SDL_Event*      events,</span></span></span><br><span class="line"><span class="function"><span class="params">                   <span class="keyword">int</span>             numevents,</span></span></span><br><span class="line"><span class="function"><span class="params">                   SDL_eventaction action,</span></span></span><br><span class="line"><span class="function"><span class="params">                   Uint32          minType,</span></span></span><br><span class="line"><span class="function"><span class="params">                   Uint32          maxType)</span></span></span><br></pre></td></tr></table></figure>
+<p>返回检索到的事件数，参数如下：</p>
+<p>events: 检索到的事件的目标缓冲区</p>
+<p>numevents: 想要检索的事件数</p>
+<p>action：SDL_ADDEVENT表示添加事件到队列末尾；SDL_PEEKEVENT和SDL_GETEVENT均是表示获取队列前面满足最大最小范围内的事件，但前者不从队列中删除事件，后者会删除。</p>
+<p>minType：纳入考虑的事件类型的最小值，通常用SDL_FIRSTEVENT</p>
+<p>maxType：纳入考虑的事件类型的最小值，通常用SDL_LASTEVENT</p>
+<p>事件常见用法：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">    SDL_Event event;</span><br><span class="line">    <span class="keyword">while</span> (SDL_PollEvent(&amp;event)) &#123;</span><br><span class="line">        <span class="comment">/* handle your event here */</span></span><br><span class="line">        <span class="keyword">switch</span>(event.type)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">case</span> SDL_QUIT:</span><br><span class="line">             <span class="keyword">break</span>;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* do some other stuff here -- draw your app, etc. */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上例的用法中内层循环不断取事件进行判断，外层循环使得队列为空后重新开始内存循环，由于SDL_PollEvent不阻塞，会造成CPU跑到100%，所以至少得在外层循环的最后delay一下，释放一下CPU。</p>
 <p>设置某种类型事件的处理状态：</p>
