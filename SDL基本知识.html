@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-10-13T08:16:41.232Z">
+<meta property="og:updated_time" content="2018-10-20T07:25:40.853Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="SDL基本知识">
 <meta name="twitter:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
@@ -450,7 +450,7 @@
 </ul>
 <p>创建成功则返回纹理的ID，失败返回0</p>
 <h1 id="循环显示画面"><a href="#循环显示画面" class="headerlink" title="循环显示画面"></a>循环显示画面</h1><h2 id="设置纹理的数据"><a href="#设置纹理的数据" class="headerlink" title="设置纹理的数据"></a>设置纹理的数据</h2><p>使用SDL_UpdateTexture()设置纹理的像素数据。SDL_UpdateTexture()的原型如下。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> SDLCALL <span class="title">SDL_UpdateTexture</span><span class="params">(SDL_Texture * texture,</span></span></span><br><span class="line"><span class="function"><span class="params">                                              <span class="keyword">const</span> SDL_Rect * rect,</span></span></span><br><span class="line"><span class="function"><span class="params">                                              <span class="keyword">const</span> <span class="keyword">void</span> *pixels, <span class="keyword">int</span> pitch)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> SDLCALL <span class="title">SDL_UpdateTexture</span><span class="params">(SDL_Texture * texture,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">const</span> SDL_Rect * rect,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">const</span> <span class="keyword">void</span>    *pixels,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">int</span>             pitch)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>参数的含义如下:</p>
 <ul>
 <li>texture：目标纹理。</li>
@@ -554,7 +554,7 @@
 <li>format: 指定了每个sample元素的大小和类型。一般用AUDIO_S16SYS，表示16位无符号，取决于系统大小端。</li>
 <li>channels 指定了声音的通道数：1（单声道）；2（立体声）。</li>
 <li>samples 这个值表示音频缓存区的大小（以sample计）。一个sample是一段大小为 format * channels 的音频数据。推荐值为 512-8192，ffplay 使用的是 1024。</li>
-<li>size： 这个值表示音频缓存区的大小（以byte计）。由打开设备的函数计算，不用传值。</li>
+<li>size： 这个值表示音频缓存区的大小（以byte计）。由打开设备的函数计算。</li>
 <li>silence： 设置表示静音的值。由打开设备的函数计算。</li>
 <li>padding： 考虑到兼容性的一个参数。</li>
 <li>userdata：程序特定的参数，传给callback。</li>
@@ -565,11 +565,20 @@
 </ul>
 </li>
 </ul>
-<h2 id="打开音频设备"><a href="#打开音频设备" class="headerlink" title="打开音频设备"></a>打开音频设备</h2><p>SDL_OpenAudioDevice和SDL_OpenAudio：均是打开特定的音频设备，在SDL2中SDL_OpenAudioDevice用于替代原来的SDL_OpenAudio。但是只能用来打开AudioDeviceID大于等于2的设备，而默认的设备，即AudioDeviceID等于1，仍然只能用SDL_OpenAudio函数打开：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_OpenAudio</span><span class="params">(SDL_AudioSpec* desired,</span></span></span><br><span class="line"><span class="function"><span class="params">                  SDL_AudioSpec* obtained)</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="打开音频设备"><a href="#打开音频设备" class="headerlink" title="打开音频设备"></a>打开音频设备</h2><p>SDL_OpenAudioDevice和SDL_OpenAudio：均是打开特定的音频设备，在SDL2中SDL_OpenAudioDevice用于替代原来的SDL_OpenAudio。但是只能用来打开AudioDeviceID大于等于2的设备，而默认的设备，即AudioDeviceID等于1，仍然只能用SDL_OpenAudio函数打开。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SDL_AudioDeviceID <span class="title">SDL_OpenAudioDevice</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>*          device,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      <span class="keyword">int</span>                  iscapture,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      <span class="keyword">const</span> SDL_AudioSpec* desired,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      SDL_AudioSpec*       obtained,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      <span class="keyword">int</span>                  allowed_changes)</span></span></span><br></pre></td></tr></table></figure>
 <ul>
+<li>device：由SDL_GetAudioDeviceName()得到的UTF-8字符串，传入NULL表示请求最合理的默认值（相当于调用SDL_OpenAudio()，似乎有所矛盾？）</li>
+<li>iscapture：传入非零值表示设备应该打开进行录制，而不是播放。</li>
 <li>desired：预先构造的期望的SDL_AudioSpec，以该参数打开设备。</li>
 <li>obtained：将实际硬件参数放在其中。如果为NULL，则传递给回调函数的音频数据将被保证为所请求的格式，如果需要的话，将自动转换为实际的硬件音频格式。如果获得的是NULL，那么desired会修改字段。</li>
+<li>allowed_changes：由于实际参数可能不符合期望参数，这里设置是否允许改变，可以为0，或者是一个或多个内部定义的标志。</li>
+</ul>
+<p>成功则返回设备ID，失败返回0。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_OpenAudio</span><span class="params">(SDL_AudioSpec* desired,</span></span></span><br><span class="line"><span class="function"><span class="params">                  SDL_AudioSpec* obtained)</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>desired：同上。</li>
+<li>obtained：同上。</li>
 </ul>
 <p>成功返回0。</p>
 <h2 id="暂停音频"><a href="#暂停音频" class="headerlink" title="暂停音频"></a>暂停音频</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SDL_PauseAudio</span><span class="params">(<span class="keyword">int</span> pause_on)</span></span></span><br></pre></td></tr></table></figure>
