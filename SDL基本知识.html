@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-10-20T07:25:40.853Z">
+<meta property="og:updated_time" content="2018-11-04T03:24:17.485Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="SDL基本知识">
 <meta name="twitter:description" content="本文主要记录一些SDL的基础知识，基于SDL2.0，有时间会慢慢增改。SDL是一个跨平台的库，通过封装OpenGL和Direct3D等提供对音频、键盘、鼠标、操纵杆和图形硬件的底层访问。FFmpeg只能实现视音频解码，而具体渲染需要配合SDL来实现，官方的ffplay用的也是SDL。">
@@ -544,7 +544,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SDL_CondWaitTimeout</span><span class="params">(SDL_cond*  cond,</span></span></span><br><span class="line"><span class="function"><span class="params">                        SDL_mutex* mutex,</span></span></span><br><span class="line"><span class="function"><span class="params">                        Uint32     ms)</span></span></span><br></pre></td></tr></table></figure>
 <p>与上一个函数类似，等待条件变量发出信号或经过指定的时间，所以可以用于延时。当得到信号后返回0。</p>
 <h1 id="SDL音频播放的大致流程："><a href="#SDL音频播放的大致流程：" class="headerlink" title="SDL音频播放的大致流程："></a>SDL音频播放的大致流程：</h1><ol>
-<li>创建 SDL_AudioSpec 结构体，设置音频播放数据。包括：采样率(freq)、音频格式(format)、通道数(channels)、采样大小(samples)、回调函数(callback)和用户数据(userdata)等。当开始播放音频时，SDL 会持续调用这个回调方法来填充固定数量的字节到音频缓冲区。</li>
+<li>创建 SDL_AudioSpec 结构体，设置音频播放数据。包括：采样率(freq)、音频格式(format)、通道数(channels)、采样大小(samples)、回调函数(callback)和用户数据(userdata)等。当开始播放音频时，SDL会持续调用这个回调方法来填充固定数量的字节到音频缓冲区。</li>
 <li>调用 SDL_OpenAudio() 函数，传入上述 SDL_AudioSpec 结构体数据。这时它会打开音频设备并返回一个另外的 SDL_AudioSpec，这个才是我们真正使用的 SDL_AudioSpec，跟我们传入的可能有所不同。</li>
 </ol>
 <h2 id="创建-SDL-AudioSpec-结构体"><a href="#创建-SDL-AudioSpec-结构体" class="headerlink" title="创建 SDL_AudioSpec 结构体"></a>创建 SDL_AudioSpec 结构体</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">SDL_AudioSpec</span> &#123;</span></span><br><span class="line">	<span class="keyword">int</span> freq;		<span class="comment">/**&lt; DSP frequency -- samples per second */</span></span><br><span class="line">	Uint16 format;		<span class="comment">/**&lt; Audio data format */</span></span><br><span class="line">	Uint8  channels;	<span class="comment">/**&lt; Number of channels: 1 mono, 2 stereo */</span></span><br><span class="line">	Uint8  silence;		<span class="comment">/**&lt; Audio buffer silence value (calculated) */</span></span><br><span class="line">	Uint16 samples;		<span class="comment">/**&lt; Audio buffer size in samples (power of 2) */</span></span><br><span class="line">	Uint16 padding;		<span class="comment">/**&lt; Necessary for some compile environments */</span></span><br><span class="line">	Uint32 size;		<span class="comment">/**&lt; Audio buffer size in bytes (calculated) */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">void</span> (SDLCALL *callback)(<span class="keyword">void</span> *userdata, Uint8 *stream, <span class="keyword">int</span> len);</span><br><span class="line">	<span class="keyword">void</span>  *userdata;</span><br><span class="line">&#125; SDL_AudioSpec;</span><br></pre></td></tr></table></figure>
@@ -554,14 +554,14 @@
 <li>format: 指定了每个sample元素的大小和类型。一般用AUDIO_S16SYS，表示16位无符号，取决于系统大小端。</li>
 <li>channels 指定了声音的通道数：1（单声道）；2（立体声）。</li>
 <li>samples 这个值表示音频缓存区的大小（以sample计）。一个sample是一段大小为 format * channels 的音频数据。推荐值为 512-8192，ffplay 使用的是 1024。</li>
-<li>size： 这个值表示音频缓存区的大小（以byte计）。由打开设备的函数计算。</li>
-<li>silence： 设置表示静音的值。由打开设备的函数计算。</li>
+<li>size： 这个值表示音频缓存区的大小（以byte计）。可由打开设备的函数根据format、channels、samples等参数计算。</li>
+<li>silence： 设置表示静音的值。可由打开设备的函数计算。</li>
 <li>padding： 考虑到兼容性的一个参数。</li>
 <li>userdata：程序特定的参数，传给callback。</li>
 <li>callback： 是获取音频数据后的持续调用的回调函数，可以将解码获取的音频码流进行混音并输出到设备。callback的参数：<ul>
-<li>userdata：如上，一般传入解码器上下文AVCodecContext。</li>
-<li>stream：指向缓存区的指针，这个缓存区将被这个回调函数填满。回调函数必须填满该缓冲区，若没有声音可播放则应填满静音。一旦回调函数返回，缓冲区将不再有效。</li>
-<li>len：上面缓存区的大小（字节数）。</li>
+<li>userdata：如上，一般传入解码器上下文AVCodecContext等，ffplay中是包含了丰富内容的VideoState。</li>
+<li>stream：指向缓存区的指针，这个缓存区将被这个回调函数填满。回调函数必须填满该缓冲区，若没有声音可播放则应填满静音。一旦回调函数返回，缓冲区将不再有效。（应该是SDL自己传入的）</li>
+<li>len：即上面缓存区的大小（应该是与size相同，SDL自己传入的）。</li>
 </ul>
 </li>
 </ul>
