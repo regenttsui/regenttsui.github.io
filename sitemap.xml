@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://regenttsui.github.io/%E7%BC%96%E8%A7%A3%E7%A0%81%E6%96%B0API.html</loc>
+    
+    <lastmod>2018-11-21T15:20:45.587Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://regenttsui.github.io/FFmpeg%E5%9F%BA%E6%9C%AC%E7%9F%A5%E8%AF%86.html</loc>
+    
+    <lastmod>2018-11-21T12:35:43.504Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://regenttsui.github.io/SDL%E5%9F%BA%E6%9C%AC%E7%9F%A5%E8%AF%86.html</loc>
     
     <lastmod>2018-11-04T03:24:17.485Z</lastmod>
@@ -26,13 +40,6 @@
     <loc>https://regenttsui.github.io/%E7%AE%80%E5%8D%95%E7%9A%84%E7%BA%AF%E8%A7%86%E9%A2%91%E6%92%AD%E6%94%BE%E5%99%A8.html</loc>
     
     <lastmod>2018-09-24T08:51:37.729Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://regenttsui.github.io/FFmpeg%E5%9F%BA%E6%9C%AC%E7%9F%A5%E8%AF%86.html</loc>
-    
-    <lastmod>2018-09-23T08:29:38.415Z</lastmod>
     
   </url>
   
