@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="由于一直对FFmpeg中新的编解码API不太理解，而网上不少资料还是使用旧API，即使是使用新API的，其中一些说法亦不足以令鄙人理解，遂在官方网页上找到了相关的解释，算是比较清晰的说明新API的用法和注意事项，故本文参照其内容做一番记录。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-11-22T11:13:39.745Z">
+<meta property="og:updated_time" content="2018-11-24T09:00:39.544Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FFmpeg编解码新API的正确使用">
 <meta name="twitter:description" content="由于一直对FFmpeg中新的编解码API不太理解，而网上不少资料还是使用旧API，即使是使用新API的，其中一些说法亦不足以令鄙人理解，遂在官方网页上找到了相关的解释，算是比较清晰的说明新API的用法和注意事项，故本文参照其内容做一番记录。">
@@ -397,8 +397,7 @@
 </ul>
 </li>
 </ol>
-<p>在循环中重复调用上述函数，直到它返回AVERROR（EAGAIN）或错误。AVERROR（EAGAIN）返回值表示输入的数据已经全部处理完了，需要新的输入数据才能返回新输出。在这种情况下，继续发送新的输入。对于每个输入的frame/packet，编解码器通常将返回1个输出的packet/frame，但它的个数也可以是0或大于1。对于0的情况下面会说到，音频情况下可能会大于1。</p>
-<p>在解码或编码开始时，编解码器可以接受多个输入的frame/packet而不返回packet/frame，直到其内部缓冲器被填满才会返回，即上面的提到的0的情况。如果按照上述步骤操作，则已经处理了此情况。</p>
+<p>在循环中重复调用上述函数，直到它返回AVERROR（EAGAIN）或错误。AVERROR（EAGAIN）返回值表示输入的数据已经全部处理完了，需要新的输入数据才能返回新输出，注意此次输出的frame是没有数据的。在这种情况下，需要继续发送新的输入。对于每个输入的frame/packet，编解码器通常将返回1个输出的packet/frame，但它的个数也可以是0(无数据)或大于1。比如音频情况下可能会大于1。对于0的情况，一个是上面说到的AVERROR（EAGAIN）；另一个是在解码或编码开始时，编解码器可以接受多个输入的frame/packet而不返回packet/frame，直到其内部缓冲器被填满才会返回。如果按照上述步骤操作，则此情况已经被良好地处理了。</p>
 <h1 id="流结束的情况"><a href="#流结束的情况" class="headerlink" title="流结束的情况"></a>流结束的情况</h1><p>文件流结束后都需要“刷新”(也叫draining)编解码器，因为编解码器可能出于性能考虑或由于必须的原因(比如考虑b帧时)会在内部缓冲多个帧或包，为了拿到这些剩余的数据，处理方法如下：</p>
 <ol>
 <li><p>文件结束时，将NULL(而不是有效的输入，具体来说比如解码时将输入的packet设置为：pkt-&gt;data = NULL;pkt-&gt;size = 0;)发送到avcodec_send_packet()(解码时)或avcodec_send_frame()(编码时)函数，这将进入draining模式。</p>
