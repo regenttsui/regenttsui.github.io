@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="Regent&#39;s Blog">
 <meta property="og:description" content="鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFmpeg最常用的结构体">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-11-21T12:35:43.504Z">
+<meta property="og:updated_time" content="2018-12-08T08:27:50.442Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="FFmpeg基本知识">
 <meta name="twitter:description" content="鼎鼎大名的FFmpeg不用多作介绍，基本是音视频技术必备的基础库之一，提供了强大的音视频处理方案。本文记录FFmpeg的一些基本知识，基于4.0.2，有时间会慢慢增改。(PS:可能有错误) FFmpeg最常用的结构体">
@@ -447,19 +447,21 @@
 <li>分配AVPacket和AVFrame的内存:</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AVPacket *pkt = av_packet_alloc();AVFrame *frame = av_frame_alloc();</span><br></pre></td></tr></table></figure>
-<p>这两个语句分配的内存不包括存储数据的部分，失败时返回NULL。</p>
+<p>这两个语句分配的内存是AVPacket和AVFrame结构本身的内存，而不包括其指向的实际数据的部分，这些需要另外分配。失败时返回NULL。此外AVPacket也可以不使用指针动态分配内存，而是直接定义AVPacket pkt，然后用其他方法获得相应数据。</p>
 <ol start="10">
 <li>循环调用函数：</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">av_read_frame(AVFormatContext *s, AVPacket *pkt)</span><br></pre></td></tr></table></figure>
-<p>该函数从流中读取一个数据包packet，把它存储在 AVPacket 数据结构中。其中packet.data这个指针会指向这些数据，而这些数据占用的内存需要通过av_packet_unref()函数来释放，即该packet出现问题时需要释放内存才能继续下一packet的读取。</p>
+<p>该函数从流中读取一个数据包，把它存储在AVPacket数据结构中，其中packet.data这个指针会指向这些数据。注意av_read_frame不会调用av_packet_unref，只会调用av_init_packet将引用计数的指针指向NULL。因此如果该packet没有拷贝到别处用于其他用途，则在下一次av_read_frame前实际数据占用的内存需要手动通过av_packet_unref()函数来释放(一般放在av_read_frame最后，保证该次循环不会再使用改packet)。</p>
 <p>然后在循环中先调用avcodec_send_packet(AVCodecContext <em>avctx, const AVPacket </em>avpkt)发送</p>
-<p>再调用avcodec_receive_frame(AVCodecContext <em>avctx, AVFrame </em>frame)接收。</p>
+<p>再调用avcodec_receive_frame(AVCodecContext <em>avctx, AVFrame </em>frame)接收。注意该函数会先调用av_frame_unref(frame)，故如果每次使用的是同一个frame去接收解码后的数据，那么每次传进去就会把前面的数据释放掉，导致就只有一个frame是有用的。</p>
 <p>如果发送函数报AVERROR(EAGAIN)的错，表示已发送的AVPacket还没有被接收，不允许发送新的AVPacket。如果是接收函数报这个错，表示没有新的AVPacket可以接收，需要先发送AVPacket才能执行这个函数。而如果报AVERROR_EOF的错，在以上4个函数中都表示编解码器处于已经刷新完成的状态，没有数据可以进行发送和接收操作。</p>
 <ol start="11">
 <li>最后释放内存</li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">avcodec_free_context(*AVCodecContext);</span><br><span class="line">av_frame_free(&amp;frame);</span><br><span class="line">av_packet_free(&amp;pkt);</span><br><span class="line">avformat_close_input(&amp;fmt_ctx);</span><br></pre></td></tr></table></figure>
+<p>av_frame_free(&amp;frame)和av_packet_free(&amp;pkt)分别对应于av_frame_alloc()和av_packet_alloc()，不同之处在于av_frame_alloc()和av_packet_alloc()会先调用av_frame_unref()释放buf内存，再释放AVFrame本身的内存，av_packet_alloc()同理。</p>
+<p>注意av_frame_ref对src的buf增加一个引用，即使用同一个数据，只是这个数据引用计数加1。av_frame_unref把自身对buf的引用释放掉，数据的引用计数减1，当引用为0就释放buf。</p>
 <h1 id="图像-音频数据内存分配与释放"><a href="#图像-音频数据内存分配与释放" class="headerlink" title="图像/音频数据内存分配与释放"></a>图像/音频数据内存分配与释放</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_image_get_buffer_size</span> <span class="params">(<span class="keyword">enum</span> AVPixelFormat pix_fmt, <span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> align)</span></span></span><br></pre></td></tr></table></figure>
 <p>返回对应图像格式和大小的图像所占的字节数，最后一个参数是内存对齐的对齐数，也就是按多大的字节进行内存对齐。比如设置为1，表示按1字节对齐，那么得到的结果就是与实际的内存大小一样。再比如设置为4，表示按4字节对齐。也就是内存的起始地址必须是4的整倍数。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">av_malloc</span><span class="params">(<span class="keyword">size_t</span> size)</span></span></span><br></pre></td></tr></table></figure>
